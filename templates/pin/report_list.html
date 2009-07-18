@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if object_list %}
+  <ul>
+  {% for report in object_list %}
+    <li>{{ report.date }}</li>
+  {% endfor %}
+  </ul>
+{% else %}
+  <p>No reports are available.</p>
+{% endif %}
+
+<a href="{% url pin.views.new_report %}{{ gid }}/">Create new report</a>
+
+{% endblock %}

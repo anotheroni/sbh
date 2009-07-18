@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  {% if form.errors %}
+    <p style="color: red;">
+      Please correct the error{{ form.errors|pluralize }} bellow.
+    </p>
+  {% endif %}
+
+  {% if object_list %}
+    <ul>
+    {% for delivery in object_list %}
+      <li>{{ deilvery.fuel_type.name }} - {{ delivery.volume }} <a href="{% url pin.views.new_report %}{{ delivery.id }}/">Delete</a></li>
+    {% endfor %}
+    </ul>
+  {% else %}
+    <p> No deliveries.</p>
+  {% endif %}
+
+  <hr>
+
+  <form action="" method="post">
+    <table>
+      {{ form.as_table }}
+    </table>
+    <input type="submit" value="Submit">
+  </form>
+
+{% endblock %}

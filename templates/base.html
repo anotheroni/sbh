@@ -1,0 +1,20 @@
+<!DOCTYPE HTML PUBLIC " - //W3C//DTD HTML 4.01//EN">
+<html lang="en">
+<head>
+    <title>{% block title %}{% endblock %}</title>
+</head>
+<body>
+    <h1>Pin Application</h1>
+    {% block menu%}
+      {% if user.is_authenticated %}
+        <a href="{% url django.contrib.auth.views.logout %}">logout</a>
+      {% endif %}
+      <hr>
+    {% endblock %}
+    {% block content %}{% endblock %}
+    {% block footer %}
+      <hr>
+      <p>Thanks for visiting Pin App from Efficient</p>
+    {% endblock %}
+</body>
+</html>

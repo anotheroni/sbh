@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if report %}
+  <ul>
+    <li>{{ report.date }}</li>
+    <li><a href="{% url pin.views.new_report %}r{{ report.id }}/mech/">Mekaniskaräkneverk</a>{% if report.has_mech_data %} GOOD {% else %} BAD {% endif %}
+</li>
+    <li><a href="{% url pin.views.new_report %}r{{ report.id }}/deliv/">Leveranser</a>{% if report.has_delivery_data %} YES {% else %} NONE {% endif %}</li>
+    <li><a href="{% url pin.views.new_report %}r{{ report.id }}/misc/">Övrigt</a>{% if report.has_acc_data %} GOOD {% else %} BAD {% endif %}</li>
+  {% if report.is_complete %}
+    <li><a href="{% url pin.views.new_report %}r{{ report.id }}/misc/">Signera</a></li>
+  {% endif %}
+  </ul>
+{% else %}
+  <p>No reports are available.</p>
+{% endif %}
+
+{% endblock %}
