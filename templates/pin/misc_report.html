@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+  {% if form.errors %}
+    <p style="color: red;">
+      Please correct the error{{ form.errors|pluralize }} bellow.
+    </p>
+  {% endif %}
+
+
+  <form action="" method="post">
+    <table>
+{#      <tr><th></th>      
+      {% for ft in ft_list %}
+        <th>{{ ft.1 }}</th>
+      {% endfor %}
+      </tr><th>Electric</th>
+      {% for key,value in form.fields %}
+        {% ifequal key "elec_1" %}
+          <td>{{ value }}</td>
+        {% endifequal %}
+      {% endfor %}
+      </tr>#}
+      {{ form.as_table }}
+    </table>
+    <input type="submit" value="Submit">
+  </form>
+
+{% endblock %}

@@ -13,9 +13,9 @@ from sbh.pin.models import GasStation, PumpNozle, Pump, FuelType, Delivery
 
 class MechanicalMeterForm(forms.Form):
 
-  def __init__(self, gid, *args, **kwargs):
+  def __init__(self, gs, *args, **kwargs):
     super(MechanicalMeterForm, self).__init__(*args, **kwargs)
-    nozles = PumpNozle.objects.filter(pump__station=gid).order_by('id')
+    nozles = PumpNozle.objects.filter(pump__station=gs).order_by('id')
     for n in nozles:
       self.fields['%d' % n.id] = forms.IntegerField(label = "pn%d_tp%s" % (n.pump.number, n.fuel_type.id))
 
@@ -43,7 +43,13 @@ class DeliveryForm(forms.Form):
 
 class MiscForm(forms.Form):
 
-  def __init__(self, gid, *args, **kwargs):
+  def __init__(self, gs, *args, **kwargs):
     super(MiscForm, self).__init__(*args, **kwargs)
 
-    nozles = PumpNozle.objects.filter(pump__station=gid)
+    ft_list = GasStation.get_used_fuel_types(gs)
+
+    for (ft_id, ft_name) in ft_list:
+      self.fields['elec_%d' % ft_id] = forms.DecimalField()
+      self.fields['pin_%d' % ft_id] = forms.DecimalField()
+      self.fields['rp_%d' % ft_id] = forms.DecimalField()
+      self.fields['pp_%d' % ft_id] = forms.DecimalField()

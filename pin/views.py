@@ -3,9 +3,9 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
-from sbh.pin.models import Report, GasStation, PumpStatus, Delivery, AccumulatedData, FuelType, PumpNozle
+from sbh.pin.models import Report, GasStation, PumpStatus, Delivery, FuelTypeData, FuelType, PumpNozle
 #from sbh.pin.forms import get_mechanical_meter_form
-from sbh.pin.forms import MechanicalMeterForm, DeliveryForm
+from sbh.pin.forms import MechanicalMeterForm, DeliveryForm, MiscForm
 from datetime import datetime
 
 @login_required() #redirect_field_name='login/') #?next=%s' % request.path)
@@ -17,27 +17,29 @@ def station_list(request):
 
 @login_required()
 def report_list(request, gid=0):
+  gid = int(gid)
   try:	# Make sure that the Gas Station exists, if not redirect 
-    gs = GasStation.objects.get(id = int(gid))
+    gs = GasStation.objects.get(id = gid)
   except GasStation.DoesNotExist:
     return HttpResponseRedirect(reverse('pin.views.station_list'))
 
-  report_list = Report.objects.filter(station=int(gid)).order_by('-date')
+  report_list = Report.objects.filter(station=gid).order_by('-date')
   c = RequestContext(request, {'object_list': report_list, 'gid': gid})
   return render_to_response('pin/report_list.html', c)
 
 @login_required()
 def new_report(request, gid = 0):
+  gid = int(gid)
   try:  # Make sure that the Gas Station exists, if not redirect 
-    gs = GasStation.objects.get(id = int(gid))
+    gs = GasStation.objects.get(id = gid)
   except GasStation.DoesNotExist:
     return HttpResponseRedirect(reverse('pin.views.station_list'))
   
   try:  # Check if there is an unsigned report to continue
-    r = Report.objects.get(station = int(gid), signature__isnull = True)
+    r = Report.objects.get(station = gid, signature__isnull = True)
   except Report.DoesNotExist:
     try:  # find which is the next date to report
-      rep = Report.objects.get(station = int(gid)).order_by('-date')[0:1]
+      rep = Report.objects.get(station = gid).order_by('-date')[0:1]
       date = rep.date + timedelta(days=1)
     except Report.DoesNotExist:  # This is the first report for the station!
       date = datetime.today()
@@ -55,7 +57,6 @@ def overview_report(request, rid=0):
     return HttpResponseRedirect(reverse('pin.views.station_list'))
 
   c = RequestContext(request, {'report': rep})
-#, 'report_has_mech_data': rep.has_mech_data(), 'report_is_complete': rep.is_complete()})
   return render_to_response('pin/overview_report.html', c)
   
 
@@ -68,7 +69,7 @@ def mech_report(request, rid=0):
     return HttpResponseRedirect(reverse('pin.views.station_list'))
     
   if request.method == 'POST':
-    form = MechanicalMeterForm(gid=rep.station, data=request.POST)
+    form = MechanicalMeterForm(gs=rep.station, data=request.POST)
     if form.is_valid():
       cd = form.cleaned_data
       for data in cd:
@@ -81,7 +82,7 @@ def mech_report(request, rid=0):
           ps.save()
       return HttpResponseRedirect('/pin/new_report/r%d/ov/' % rid)
   else:
-    form = MechanicalMeterForm(gid=rep.station)
+    form = MechanicalMeterForm(gs=rep.station)
 
   c = RequestContext(request, {'gid': rep.station, 'form': form})
   return render_to_response('pin/mech_report.html', c)
@@ -116,21 +117,65 @@ def deliv_report(request, rid=0):
 
 @login_required()
 def misc_report(request, rid=0):
+  rid = int(rid)
   try:	# Make sure report exist, of not redirect
-    rep = Report.objects.get(id = int(rid))
+    rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
     return HttpResponseRedirect(reverse('pin.views.station_list'))
 
-  c = requestcontext(request, {'gid': gid, 'form': form})
+  if request.method == 'POST':
+    form = MiscForm(gs = rep.station, data = request.POST)
+    if form.is_valid():
+      cd = form.cleaned_data
+      for ft_id,name in GasStation.get_used_fuel_types(rep.station):
+        # TODO check if record exists
+        ftdo = FuelTypeData(report = rep, fuel_type = FuelType.objects.get(id = ft_id),
+                 accumulated_storage_diff = 00.00,
+                 accumulated_sold = 00.00,
+                 elec_meter_reading = float(cd['elec_%d' % ft_id]),
+                 elec_accumulated_diff = 00.00,
+                 pin_meter_reading = float(cd['pin_%d' % ft_id]),
+                 rundp_data = float(cd['rp_%d' % ft_id]),
+                 pumpp_data = float(cd['pp_%d' % ft_id]))
+        ftdo.save()
+      return HttpResponseRedirect('/pin/new_report/r%d/ov/' % rid)
+  else:
+    form = MiscForm(gs=rep.station)
+
+  ft_list = GasStation.get_used_fuel_types(rep.station)
+
+  c = RequestContext(request, {'gid': rep.station, 'form': form, 'ft_list': ft_list})
   return render_to_response('pin/misc_report.html', c)
 
 @login_required()
 def view_report(request, rid=0):
+  rid = int(rid)
   try:	# Make sure report exist, of not redirect
-    rep = Report.objects.get(id = int(rid))
+    rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
     return HttpResponseRedirect(reverse('pin.views.station_list'))
 
-  c = requestcontext(request, {'gid': gid, 'form': form})
-  return render_to_response('pin/misc_report.html', c)
+  ft_list = GasStation.get_used_fuel_types(rep.station)
+  page = list()
+  row00 = ["#"]
+  row15 = [u"Avlasning registerinstallning idag"]
+  row28 = ["Pejlat lager idag"]
+  row32 = ["Rundpumpning"]
+  row41 = ["Pumppris idag"]
+  for ft_id,ft_name in ft_list:
+    row00.append(ft_name)
+    ftdo = FuelTypeData.objects.get(report = rep, fuel_type = ft_id)
+    row15.append(ftdo.elec_meter_reading)
+    row28.append(ftdo.pin_meter_reading)
+    row32.append(ftdo.rundp_data)
+    row41.append(ftdo.pumpp_data)
+
+  page.append(row00)
+  page.append(row15)
+  page.append(row28)
+  page.append(row32)
+  page.append(row41)
+
+  c = RequestContext(request, {'gid': rep.station, 'page': page})
+  return render_to_response('pin/view_report.html', c)
 

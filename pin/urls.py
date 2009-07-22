@@ -10,6 +10,7 @@ urlpatterns = patterns('',
   (r'^new_report/r(?P<rid>\d+)/mech/$', 'pin.views.mech_report'),
   (r'^new_report/r(?P<rid>\d+)/deliv/$', 'pin.views.deliv_report'),
   (r'^new_report/r(?P<rid>\d+)/misc/$', 'pin.views.misc_report'),
+  (r'^new_report/r(?P<rid>\d+)/view/$', 'pin.views.view_report'),
   (r'^report/(?P<gid>\d+)/$', 'pin.views.view_report'),
 )
 

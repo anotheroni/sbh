@@ -11,12 +11,14 @@ class GasStation(models.Model):
   def __unicode__(self):
     return self.name
 
-  # Returns a dictionary contaning all fuel types available at the station
+  # Returns a list contaning all fuel types available at the station order by name
   def get_used_fuel_types(self):
-    result = dict()
-    all_nozles = PumpNozle.objects.filter(pump__station = self.id)
+    result = list()
+    all_nozles = PumpNozle.objects.filter(pump__station = self.id).order_by('fuel_type__name')
     for nozle in all_nozles:
-      result[nozle.fuel_type.id] = nozle.fuel_type.name
+      val = (nozle.fuel_type.id, nozle.fuel_type.name)
+      if val not in result:
+        result.append(val)
     return result
 
 class FuelType(models.Model):
@@ -54,34 +56,22 @@ class Report(models.Model):
   def has_delivery_data(self):
     return (len(Delivery.objects.filter(report = self.id)) != 0)
 
-  def has_acc_data(self):
-    return (len(AccumulatedData.objects.filter(report = self.id)) != 0)
-
-  def has_pin_data(self):
-    return (len(PinMeter.objects.filter(report = self.id)) != 0)
-
-  def has_elec_data(self):
-    return (len(ElectronicMeterCounter.objects.filter(report = self.id)) != 0)
+  def has_fuel_type_data(self):
+    return (len(FuelTypeData.objects.filter(report = self.id)) != 0)
 
   def is_complete(self):
-    return (self.has_mech_data() and self.has_acc_data() and self.has_pin_data() and self.has_elec_data())
+    return (self.has_mech_data() and self.has_fuel_type_data())
 
-class AccumulatedData(models.Model):
+class FuelTypeData(models.Model):
   report = models.ForeignKey(Report)
   fuel_type = models.ForeignKey(FuelType)
   accumulated_storage_diff = models.FloatField()
   accumulated_sold = models.FloatField()
-
-class ElectronicMeterCounter(models.Model):
-  report = models.ForeignKey(Report)
-  meter_reading = models.FloatField()
-  accumulated_diff = models.FloatField()
-  fuel_type = models.ForeignKey(FuelType)
-
-class PinMeter(models.Model):
-  report = models.ForeignKey(Report)
-  meter_reading = models.FloatField()
-  fuel_type = models.ForeignKey(FuelType)
+  elec_meter_reading = models.FloatField()
+  elec_accumulated_diff = models.FloatField()
+  pin_meter_reading = models.FloatField()
+  rundp_data = models.FloatField()
+  pumpp_data = models.FloatField()
 
 class PumpStatus(models.Model):
   report = models.ForeignKey(Report)
