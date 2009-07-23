@@ -158,19 +158,46 @@ def view_report(request, rid=0):
   ft_list = GasStation.get_used_fuel_types(rep.station)
   page = list()
   row00 = ["#"]
-  row15 = [u"Avlasning registerinstallning idag"]
+  row10 = ["S:a matarstallning idag"]
+  row15 = ["Avlasning registerinstallning idag"]
   row28 = ["Pejlat lager idag"]
   row32 = ["Rundpumpning"]
   row41 = ["Pumppris idag"]
+
+  pumpnumlist = list()
+  pumprowlist = list()
+  pumpop = dict()
+  for pump in PumpStatus.objects.filter(report = rep):
+    pump_num = pump.pump_nozle.pump.number
+    if pump_num not in pumpnumlist:
+      pumpnumlist.append(pump_num)
+    pumpop["pump_%d_%d" % (pump_num, pump.pump_nozle.fuel_type.id)] = pump.meter_reading
+  pumpnumlist.sort()
+  for pump_num in pumpnumlist:
+    pumprowlist.append(["%d" % pump_num])
+
   for ft_id,ft_name in ft_list:
     row00.append(ft_name)
     ftdo = FuelTypeData.objects.get(report = rep, fuel_type = ft_id)
+
+    pump_tot = 0.0
+    for prl in pumprowlist:
+      try:
+        val = pumpop["pump_%s_%d" % (prl[0], ft_id)]
+        pump_tot = pump_tot + val
+        prl.append(val)
+      except:
+        prl.append("")
+    row10.append(pump_tot)
+
     row15.append(ftdo.elec_meter_reading)
     row28.append(ftdo.pin_meter_reading)
     row32.append(ftdo.rundp_data)
     row41.append(ftdo.pumpp_data)
 
   page.append(row00)
+  page = page + pumprowlist
+  page.append(row10)
   page.append(row15)
   page.append(row28)
   page.append(row32)

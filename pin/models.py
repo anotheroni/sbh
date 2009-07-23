@@ -49,6 +49,7 @@ class Report(models.Model):
   station = models.ForeignKey(GasStation)
   signature = models.DateTimeField('Signature Time', blank=True)
   version = models.IntegerField(default=0)
+  previous = models.IntegerField(unique=True, blank=True) 
 
   def has_mech_data(self):
     return (len(PumpStatus.objects.filter(report = self.id)) != 0)
@@ -65,13 +66,14 @@ class Report(models.Model):
 class FuelTypeData(models.Model):
   report = models.ForeignKey(Report)
   fuel_type = models.ForeignKey(FuelType)
-  accumulated_storage_diff = models.FloatField()
-  accumulated_sold = models.FloatField()
-  elec_meter_reading = models.FloatField()
-  elec_accumulated_diff = models.FloatField()
-  pin_meter_reading = models.FloatField()
-  rundp_data = models.FloatField()
-  pumpp_data = models.FloatField()
+  mech_total_today = models.FloatField(blank=True)		# row 10
+  elec_meter_reading = models.FloatField(blank=True)		# row 15
+  accumulated_elec_diff = models.FloatField(blank=True)		# row 21
+  pin_meter_reading = models.FloatField(blank=True)		# row 28
+  rundp_data = models.FloatField(blank=True)			# row 32
+  accumulated_storage_diff = models.FloatField(blank=True)	# row 36
+  accumulated_sold = models.FloatField(blank=True)		# row 39
+  pumpp_data = models.FloatField(blank=True)			# row 41
 
 class PumpStatus(models.Model):
   report = models.ForeignKey(Report)
