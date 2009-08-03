@@ -11,7 +11,7 @@
   {% if object_list %}
     <ul>
     {% for delivery in object_list %}
-      <li>{{ deilvery.fuel_type.name }} - {{ delivery.volume }} <a href="{% url pin.views.new_report %}{{ delivery.id }}/">Delete</a></li>
+      <li>{{ delivery }} {{ delivery.volume }} <a href="{% url pin.views.new_report %}{{ delivery.id }}/">Delete</a></li>
     {% endfor %}
     </ul>
   {% else %}

@@ -1,5 +1,5 @@
 from django import forms
-from sbh.pin.models import GasStation, PumpNozle, Pump, FuelType, Delivery
+from sbh.pin.models import GasStation, PumpNozle, Pump, FuelType, Delivery, PumpStatus, FuelTypeData
 
 #def get_mechanical_meter_form(gid):
 #    nozles = PumpNozle.objects.filter(pump__station=gid)
@@ -13,11 +13,15 @@ from sbh.pin.models import GasStation, PumpNozle, Pump, FuelType, Delivery
 
 class MechanicalMeterForm(forms.Form):
 
-  def __init__(self, gs, *args, **kwargs):
+  def __init__(self, rep, *args, **kwargs):
     super(MechanicalMeterForm, self).__init__(*args, **kwargs)
-    nozles = PumpNozle.objects.filter(pump__station=gs).order_by('id')
+    nozles = PumpNozle.objects.filter(pump__station=rep.station).order_by('id')
     for n in nozles:
-      self.fields['%d' % n.id] = forms.IntegerField(label = "pn%d_tp%s" % (n.pump.number, n.fuel_type.id))
+      try:
+        ps = PumpStatus.objects.get(report = rep, pump_nozle = n)
+        self.fields['%d' % n.id] = forms.FloatField(label = "pn%d_tp%s" % (n.pump.number, n.fuel_type.id), initial=ps.meter_reading)
+      except:
+        self.fields['%d' % n.id] = forms.FloatField(label = "pn%d_tp%s" % (n.pump.number, n.fuel_type.id))
 
   def __unicode__(self):
     return self.fields
@@ -34,8 +38,8 @@ class DeliveryForm(forms.Form):
 
     fdict = gs.get_used_fuel_types()
     clist = list()
-    for id in fdict:
-      clist.append((id , fdict[id]))
+    for id,name in fdict:
+      clist.append((id , name))
 
     self.fields['amount'] = forms.DecimalField(label = "Mangd")
     self.fields['type'] = forms.ChoiceField(label = "Typ", choices = clist)
@@ -43,13 +47,32 @@ class DeliveryForm(forms.Form):
 
 class MiscForm(forms.Form):
 
-  def __init__(self, gs, *args, **kwargs):
+  def __init__(self, rep, *args, **kwargs):
     super(MiscForm, self).__init__(*args, **kwargs)
 
-    ft_list = GasStation.get_used_fuel_types(gs)
+    ft_list = GasStation.get_used_fuel_types(rep.station)
 
     for (ft_id, ft_name) in ft_list:
-      self.fields['elec_%d' % ft_id] = forms.DecimalField()
-      self.fields['pin_%d' % ft_id] = forms.DecimalField()
-      self.fields['rp_%d' % ft_id] = forms.DecimalField()
-      self.fields['pp_%d' % ft_id] = forms.DecimalField()
+      try:
+        ftdo = FuelTypeData.objects.get(report = rep, fuel_type = ft_id)
+        self.fields['elec_%d' % ft_id] = forms.DecimalField(
+                    label="Elektrisk matare %s" % ft_name,
+                    initial=ftdo.elec_meter_reading)
+        self.fields['pin_%d' % ft_id] = forms.DecimalField(
+                    label="Pin matare %s" % ft_name,
+                    initial=ftdo.pin_meter_reading)
+        self.fields['rp_%d' % ft_id] = forms.DecimalField(
+                    label="Rundpumpning %s" % ft_name,
+                    initial=ftdo.rundp_data)
+        self.fields['pp_%d' % ft_id] = forms.DecimalField(
+                    label="Pumppris %s" % ft_name,
+                    initial=ftdo.pumpp_data)
+      except:
+        self.fields['elec_%d' % ft_id] = forms.DecimalField(
+                    label="Elektrisk matare %s" % ft_name)
+        self.fields['pin_%d' % ft_id] = forms.DecimalField(
+                    label="Pin matare %s" % ft_name)
+        self.fields['rp_%d' % ft_id] = forms.DecimalField(
+                    label="Rundpumpning %s" % ft_name)
+        self.fields['pp_%d' % ft_id] = forms.DecimalField(
+                    label="Pumppris %s" % ft_name)

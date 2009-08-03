@@ -3,7 +3,7 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
-from sbh.pin.models import Report, GasStation, PumpStatus, Delivery, FuelTypeData, FuelType, PumpNozle
+from sbh.pin.models import Report, GasStation, Pump, PumpStatus, Delivery, FuelTypeData, FuelType, PumpNozle
 #from sbh.pin.forms import get_mechanical_meter_form
 from sbh.pin.forms import MechanicalMeterForm, DeliveryForm, MiscForm
 from datetime import datetime
@@ -46,13 +46,14 @@ def new_report(request, gid = 0):
     r = Report(date = date, station = gs)
     r.save()
   
-  return HttpResponseRedirect('/pin/new_report/r%d/ov' % r.id)
+  return HttpResponseRedirect('/pin/new_report/r%d' % r.id)
 #reverse('pin.views.overview_report', args=[r.id, 'ov']))
 
 @login_required()
 def overview_report(request, rid=0):
+  rid = int(rid)
   try:	# Make sure report exist, of not redirect
-    rep = Report.objects.get(id = int(rid))
+    rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
     return HttpResponseRedirect(reverse('pin.views.station_list'))
 
@@ -69,20 +70,38 @@ def mech_report(request, rid=0):
     return HttpResponseRedirect(reverse('pin.views.station_list'))
     
   if request.method == 'POST':
-    form = MechanicalMeterForm(gs=rep.station, data=request.POST)
+    form = MechanicalMeterForm(rep=rep, data=request.POST)
     if form.is_valid():
       cd = form.cleaned_data
+      ft_dict = dict()
+      for ft_id,name in GasStation.get_used_fuel_types(rep.station):
+        ft_dict[ft_id] = 0.0
       for data in cd:
-        try:  # TODO check earlier
+        try:
           pn = PumpNozle.objects.get(id = data)
         except PumpNozle.DoesNotExist:
-          pass
+          continue
         else:
-          ps = PumpStatus(report = rep, pump_nozle = pn, meter_reading = cd[data])
+          try:
+            ps = PumpStatus.objects.get(report = rep, pump_nozle = pn)
+            ps.meter_reading = cd[data]
+          except:
+            ps = PumpStatus(report = rep, pump_nozle = pn, meter_reading = cd[data])
+          ft_dict[pn.fuel_type.id] = ft_dict[pn.fuel_type.id] + cd[data]
           ps.save()
-      return HttpResponseRedirect('/pin/new_report/r%d/ov/' % rid)
+
+      for id,val in ft_dict.iteritems():  # Save fuel_type total 
+        ft = FuelType.objects.get(id=id)
+        try:  # If data already exists update
+          ftd = FuelTypeData.objects.get(report = rep, fuel_type = ft)
+          ftd.mech_total_today = val
+        except: # Otherwise create it
+          ftd = FuelTypeData(report = rep, fuel_type = ft, mech_total_today = val)
+        ftd.save()
+
+      return HttpResponseRedirect('/pin/new_report/r%d/' % rid)
   else:
-    form = MechanicalMeterForm(gs=rep.station)
+    form = MechanicalMeterForm(rep=rep)
 
   c = RequestContext(request, {'gid': rep.station, 'form': form})
   return render_to_response('pin/mech_report.html', c)
@@ -103,14 +122,18 @@ def deliv_report(request, rid=0):
         ft = FuelType.objects.get(id = int(cd['type']))
       except FuelType.DoesNotExist:
         # TODO update form is_valid check
-        return HttpResponseRedirect('/pin/new_report/r%d/ov/' % rid)
+        return HttpResponseRedirect('/pin/new_report/r%d' % rid)
       deliv = Delivery(report = rep, fuel_type = ft, station = rep.station , volume = cd['amount'])
       deliv.save()
-      return HttpResponseRedirect('/pin/new_report/r%d/ov/' % rid)
+      return HttpResponseRedirect('/pin/new_report/r%d' % rid)
   else:
     form = DeliveryForm(gs=rep.station)
 
   deliveries = Delivery.objects.filter(report = rid)
+  o_list = list()
+  for d in deliveries:
+    x = (d.fuel_type.name, d.volume)
+#  raise OsnO 
 
   c = RequestContext(request, {'gid': rep.station, 'form': form, 'object_list': deliveries})
   return render_to_response('pin/deliv_report.html', c)
@@ -124,23 +147,27 @@ def misc_report(request, rid=0):
     return HttpResponseRedirect(reverse('pin.views.station_list'))
 
   if request.method == 'POST':
-    form = MiscForm(gs = rep.station, data = request.POST)
+    form = MiscForm(rep = rep, data = request.POST)
     if form.is_valid():
       cd = form.cleaned_data
       for ft_id,name in GasStation.get_used_fuel_types(rep.station):
-        # TODO check if record exists
-        ftdo = FuelTypeData(report = rep, fuel_type = FuelType.objects.get(id = ft_id),
-                 accumulated_storage_diff = 00.00,
-                 accumulated_sold = 00.00,
+        fto = FuelType.objects.get(id = ft_id)
+        try:
+          ftdo = FuelTypeData.objects.get(report = rep, fuel_type = fto)
+          ftdo.elec_meter_reading = float(cd['elec_%d' % ft_id])
+          ftdo.pin_meter_reading = float(cd['pin_%d' % ft_id])
+          ftdo.rundp_data = float(cd['rp_%d' % ft_id])
+          ftdo.pumpp_data = float(cd['pp_%d' % ft_id])
+        except FuelTypeData.DoesNotExist:
+          ftdo = FuelTypeData(report = rep, fuel_type = fto,
                  elec_meter_reading = float(cd['elec_%d' % ft_id]),
-                 elec_accumulated_diff = 00.00,
                  pin_meter_reading = float(cd['pin_%d' % ft_id]),
                  rundp_data = float(cd['rp_%d' % ft_id]),
                  pumpp_data = float(cd['pp_%d' % ft_id]))
         ftdo.save()
-      return HttpResponseRedirect('/pin/new_report/r%d/ov/' % rid)
+      return HttpResponseRedirect('/pin/new_report/r%d' % rid)
   else:
-    form = MiscForm(gs=rep.station)
+    form = MiscForm(rep=rep)
 
   ft_list = GasStation.get_used_fuel_types(rep.station)
 
@@ -155,52 +182,195 @@ def view_report(request, rid=0):
   except Report.DoesNotExist:
     return HttpResponseRedirect(reverse('pin.views.station_list'))
 
+  try:
+    prev_rep = Report.objects.get(id = rep.previous)
+  except Report.DoesNotExist:
+    prev_rep = None
+
   ft_list = GasStation.get_used_fuel_types(rep.station)
   page = list()
-  row00 = ["#"]
-  row10 = ["S:a matarstallning idag"]
-  row15 = ["Avlasning registerinstallning idag"]
-  row28 = ["Pejlat lager idag"]
-  row32 = ["Rundpumpning"]
-  row41 = ["Pumppris idag"]
+  row00 = [u"#", "#"]
+  row10 = [u"S:a matarstallning idag", "="]
+  row11 = [u"Matarstallning foregaende", "-"]
+  row14 = [u"Salda liter", "="]
+  row15 = [u"Avlasning registerstallning idag", "+"]
+  row16 = [u"Registerstallning foregaende", "-"]
+  row17 = [u"Salda liter enligt elektr rakneverk", "="]
+  row19 = [u"Differens idag", "="]
+  row20 = [u"Differens foregaende", "+"]
+  row21 = [u"Ack differens", "="]
+  row27 = [u"Summa inleveranser", "="]
+  row28 = [u"Pejlat lager idag", ""]
+  row29 = [u"Pejlat lager foregaende", "+"]
+  row32 = [u"Rundpumpning", "+"]
+  row33 = [u"Teoretisk lager idag", "="]
+  row34 = [u"Lagerdifferens idag", "="]
+  row35 = [u"Ack lagerdifferens foregaende", "="]
+  row36 = [u"Ack lagerdifferens", "="]
+  row37 = [u"Ack forslajning foregaende", "+"]
+  row39 = [u"Ack forsaljning", "="]
+  row40 = [u"Ack lagerdifferens i %", "="]
+  row41 = [u"Pumppris idag", ""]
 
   pumpnumlist = list()
   pumprowlist = list()
-  pumpop = dict()
+  pumpsolddict = dict()
+  # Create a list with all pumps
   for pump in PumpStatus.objects.filter(report = rep):
     pump_num = pump.pump_nozle.pump.number
     if pump_num not in pumpnumlist:
       pumpnumlist.append(pump_num)
-    pumpop["pump_%d_%d" % (pump_num, pump.pump_nozle.fuel_type.id)] = pump.meter_reading
+    pumpsolddict[(pump_num, pump.pump_nozle.fuel_type.id)] = pump.meter_reading
   pumpnumlist.sort()
   for pump_num in pumpnumlist:
-    pumprowlist.append(["%d" % pump_num])
+    pumprowlist.append([pump_num, "+"])
 
+  # Find new pumps to create row 12
+  newpumplist = list()
+  newpumpdict = dict()
+  for pump in Pump.objects.filter(add_date = rep.date):
+    newpumplist.append([u"Ing matarstallning ny pump %d" % pump.number, "-"])
+    for pumpnozle in PumpNozle.objects.filter(pump = pump):
+      newpumpdict[(len(newpumplist), pumpnozle.fuel_type.id)] = pumpnozle.initial_meter_value
+
+  # Find removed pumps to create row 13
+  removedpumplist = list()
+  removedpumpdict = dict()
+  for pump in Pump.objects.filter(removal_date = rep.date):
+    removedpumplist.append([u"Utg matarstallning borttagen pump %s" % pump.number, "+"])
+    for pumpnozle in PumpNozle.objects.filter(pump = pump):
+      removedpumpdict[(len(removedpumplist), pumpnozle.fuel_type.id)] = pumpnozle.initial_meter_value
+
+  # Create a list with all deliveries
+  deliveryrowlist = list()
+  totaldeliverydict = dict()
+  for delivery in Delivery.objects.filter(report = rep):
+    row = [u"delivery", "+"]
+    for ft_id, ft_name in ft_list:
+      if delivery.fuel_type.id == ft_id:
+        try:
+          totaldeliverydict[ft_id] = totaldeliverydict[ft_id] + delivery.volume
+        except:
+          totaldeliverydict[ft_id] = delivery.volume
+        row.append(delivery.volume)
+      else:
+        row.append("")
+    deliveryrowlist.append(row)
+ 
+  # Build the table one fuel typ at a time
   for ft_id,ft_name in ft_list:
     row00.append(ft_name)
     ftdo = FuelTypeData.objects.get(report = rep, fuel_type = ft_id)
+    try:
+      ftdo_prev = FuelTypeData.objects.get(report = prev_rep, fuel_type = ft_id)
+    except:
+      ftdo_prev = None
 
-    pump_tot = 0.0
-    for prl in pumprowlist:
+    row14tot = 0.0
+
+    for pumprow in pumprowlist:
       try:
-        val = pumpop["pump_%s_%d" % (prl[0], ft_id)]
-        pump_tot = pump_tot + val
-        prl.append(val)
+        val = pumpsolddict[(pumprow[0], ft_id)]
+        pumprow.append(val)
       except:
-        prl.append("")
-    row10.append(pump_tot)
+        pumprow.append("")
+    row10.append(ftdo.mech_total_today)
+    row14tot = row14tot + ftdo.mech_total_today
 
+    for i, pumprow in enumerate(newpumplist):
+      try:
+        val = newpumpdict[(i + 1, ft_id)]
+        pumprow.append(val)
+        row14tot = row14tot - val
+      except:
+        pumprow.append("")
+
+    for i, pumprow in enumerate(removedpumplist):
+      try:
+        val = removedpumpdict[(i + 1, ft_id)]
+        pumprow.append(val)
+        row14tot = row14tot + val
+      except:
+        pumprow.append("")
+
+    row17tot = ftdo.elec_meter_reading
+    row21tot = 0.0
+    row33tot = 0.0
+    if prev_rep:
+      row11.append(ftdo_prev.mech_total_today)
+      row14.append(row14tot - ftdo_prev.mech_total_today)
+      row16.append(ftdo_prev.elec_meter_reading)
+      row17tot = row17tot - ftdo_prev.elec_meter_reading
+      row20.append(ftdo_prev.accumulated_elec_diff)
+      row21tot = row17tot - row14tot + ftdo_prev.accumulated_elec_diff
+      row29.append(ftdo_prev.pin_meter_reading)
+      row33tot = ftdo_prev.pin_meter_reading
+    else:
+      row11.append(u"None")
+      row14.append(row14tot)
+      row16.append(u"None")
+      row20.append(u"None")
+      row21tot = row17tot - row14tot
+      row29.append(u"None")
     row15.append(ftdo.elec_meter_reading)
+    row17.append(row17tot)
+    row19.append(row17tot - row14tot)
+    row21.append(row21tot)	# ftdo.accumulated_elec_diff) TODO save in db
+    row27.append(totaldeliverydict[ft_id])
     row28.append(ftdo.pin_meter_reading)
     row32.append(ftdo.rundp_data)
+    row33tot = row33tot + ftdo.rundp_data - row14tot + totaldeliverydict[ft_id] 
+    row33.append(row33tot)
+    row34.append(ftdo.pin_meter_reading - row33tot)
+    if prev_rep:
+      row35.append(ftdo_prev.accumulated_storage_diff)
+      row36tot = ftdo.pin_meter_reading - row33tot + ftdo_prev.accumulated_storage_diff
+      row36.append(row36tot)	# ftdo.accumulated_storage_diff) TODO save in db
+      row37.append(ftdo_prev.accumulated_sold)
+      row39.append(ftdo_prev.accumulated_sold + row14tot)	# ftdo.accumulated_sold)	TODO save in db
+      row40.append(row36tot * 100 / (ftdo_prev.accumulated_sold + row14tot))
+    else:
+      row35.append(u"None")
+      row36.append(ftdo.pin_meter_reading - row33tot)
+      row37.append(u"None")
+      row39.append(row14tot)	# ftdo.accumulated_sold)	TODO save in db
+      row40.append((ftdo.pin_meter_reading - row33tot) * 100 / row14tot)
     row41.append(ftdo.pumpp_data)
 
+  # Add all rows to the page
   page.append(row00)
   page = page + pumprowlist
   page.append(row10)
+  page.append(row11)
+  page = page + newpumplist
+  page = page + removedpumplist
+  page.append(row14)
   page.append(row15)
+  page.append(row16)
+  page.append(row17)
+  row14[1] = "-"
+  page.append(row14)	# row18
+  page.append(row19)
+  page.append(row20)
+  page.append(row21)
+  page = page + deliveryrowlist
+  page.append(row27)
   page.append(row28)
+  page.append(row29)
+  row27[1] = "+"
+  page.append(row27)	# row30
+  row14[1] = "-"
+  page.append(row14)	# row31
   page.append(row32)
+  page.append(row33)
+  page.append(row34)
+  page.append(row35)
+  page.append(row36)
+  page.append(row37)
+  row14[1] = "+"
+  page.append(row14)	# row38
+  page.append(row39)
+  page.append(row40)
   page.append(row41)
 
   c = RequestContext(request, {'gid': rep.station, 'page': page})

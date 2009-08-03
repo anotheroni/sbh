@@ -8,9 +8,14 @@
     </p>
   {% endif %}
 
-
   <form action="" method="post">
     <table>
+      {{ form.as_table }}
+    </table>
+    <input type="submit" value="Submit">
+  </form>
+
+{% endblock %}
 {#      <tr><th></th>      
       {% for ft in ft_list %}
         <th>{{ ft.1 }}</th>
@@ -22,9 +27,3 @@
         {% endifequal %}
       {% endfor %}
       </tr>#}
-      {{ form.as_table }}
-    </table>
-    <input type="submit" value="Submit">
-  </form>
-
-{% endblock %}

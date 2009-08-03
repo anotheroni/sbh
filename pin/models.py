@@ -29,27 +29,29 @@ class FuelType(models.Model):
 
 class Pump(models.Model):
   number = models.IntegerField()
-  initial_meter_value = models.FloatField()
-  withdrawal_meter_value = models.FloatField()
   station = models.ForeignKey(GasStation)
+  add_date = models.DateField()
+  removal_date = models.DateField(null=True, blank=True)
 
   def __unicode__(self):
-    return self.number
+    return u"%d" % self.number
 
 # Each pump can have multiple fuel types available
 class PumpNozle(models.Model):
   pump = models.ForeignKey(Pump)
   fuel_type = models.ForeignKey(FuelType)
+  initial_meter_value = models.FloatField()
+  withdrawal_meter_value = models.FloatField(null=True, blank=True)
 
   def __unicode__(self):
-    return "Pump %d - %s" % (self.pump.number, self.fuel_type.name)
+    return u"Pump %d - %s" % (self.pump.number, self.fuel_type.name)
 
 class Report(models.Model):
   date = models.DateField('Date')
   station = models.ForeignKey(GasStation)
-  signature = models.DateTimeField('Signature Time', blank=True)
+  signature = models.DateTimeField('Signature Time', null=True)
   version = models.IntegerField(default=0)
-  previous = models.IntegerField(unique=True, blank=True) 
+  previous = models.IntegerField(unique=True, null=True) 
 
   def has_mech_data(self):
     return (len(PumpStatus.objects.filter(report = self.id)) != 0)
@@ -57,8 +59,13 @@ class Report(models.Model):
   def has_delivery_data(self):
     return (len(Delivery.objects.filter(report = self.id)) != 0)
 
-  def has_fuel_type_data(self):
-    return (len(FuelTypeData.objects.filter(report = self.id)) != 0)
+  def has_fuel_type_data(self):	# TODO must do better check
+    for ft_id, ft_name in GasStation.get_used_fuel_types(self.station):
+      ftdo = FuelTypeData.objects.get(report = self, fuel_type = ft_id)
+      if ftdo.elec_meter_reading is None or ftdo.pin_meter_reading is None \
+            or ftdo.rundp_data is None or ftdo.pumpp_data is None:
+        return False
+    return True
 
   def is_complete(self):
     return (self.has_mech_data() and self.has_fuel_type_data())
@@ -66,14 +73,14 @@ class Report(models.Model):
 class FuelTypeData(models.Model):
   report = models.ForeignKey(Report)
   fuel_type = models.ForeignKey(FuelType)
-  mech_total_today = models.FloatField(blank=True)		# row 10
-  elec_meter_reading = models.FloatField(blank=True)		# row 15
-  accumulated_elec_diff = models.FloatField(blank=True)		# row 21
-  pin_meter_reading = models.FloatField(blank=True)		# row 28
-  rundp_data = models.FloatField(blank=True)			# row 32
-  accumulated_storage_diff = models.FloatField(blank=True)	# row 36
-  accumulated_sold = models.FloatField(blank=True)		# row 39
-  pumpp_data = models.FloatField(blank=True)			# row 41
+  mech_total_today = models.FloatField(null=True)		# row 10
+  elec_meter_reading = models.FloatField(null=True)		# row 15
+  accumulated_elec_diff = models.FloatField(null=True)		# row 21
+  pin_meter_reading = models.FloatField(null=True)		# row 28
+  rundp_data = models.FloatField(null=True)			# row 32
+  accumulated_storage_diff = models.FloatField(null=True)	# row 36
+  accumulated_sold = models.FloatField(null=True)		# row 39
+  pumpp_data = models.FloatField(null=True)			# row 41
 
 class PumpStatus(models.Model):
   report = models.ForeignKey(Report)
@@ -85,3 +92,6 @@ class Delivery(models.Model):
   fuel_type = models.ForeignKey(FuelType)
   station = models.ForeignKey(GasStation)
   volume = models.FloatField()
+
+  def __unicode__(self):
+    return self.fuel_type.name
