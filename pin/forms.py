@@ -76,3 +76,11 @@ class MiscForm(forms.Form):
                     label="Rundpumpning %s" % ft_name)
         self.fields['pp_%d' % ft_id] = forms.DecimalField(
                     label="Pumppris %s" % ft_name)
+
+class ViewReportForm(forms.Form):
+
+  def __init__(self, rep, *args, **kwargs):
+    super(ViewReportForm, self).__init__(*args, **kwargs)
+    
+    self.fields['password'] = forms.CharField(label=u'Password',
+             widget=forms.PasswordInput(render_value=False))

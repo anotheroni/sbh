@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 # Create your models here.
 
@@ -49,7 +50,8 @@ class PumpNozle(models.Model):
 class Report(models.Model):
   date = models.DateField('Date')
   station = models.ForeignKey(GasStation)
-  signature = models.DateTimeField('Signature Time', null=True)
+  timestamp = models.DateTimeField('Signature Time', null=True)
+  signature = models.ForeignKey(User, null=True)
   version = models.IntegerField(default=0)
   previous = models.IntegerField(unique=True, null=True) 
 
@@ -59,7 +61,7 @@ class Report(models.Model):
   def has_delivery_data(self):
     return (len(Delivery.objects.filter(report = self.id)) != 0)
 
-  def has_fuel_type_data(self):	# TODO must do better check
+  def has_fuel_type_data(self):
     for ft_id, ft_name in GasStation.get_used_fuel_types(self.station):
       ftdo = FuelTypeData.objects.get(report = self, fuel_type = ft_id)
       if ftdo.elec_meter_reading is None or ftdo.pin_meter_reading is None \

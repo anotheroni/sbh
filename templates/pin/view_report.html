@@ -20,5 +20,13 @@
   {% endfor %}
   </table>
 
+  {% if form.password %}
+    <form action="" method="post">
+      {% if form.errors %}
+        {{ form.errors.password }}
+      {% endif %}
+      <p>{{ form.password.label}}{{ form.password }}<input type="submit" value="Sign" /></p>
+    </form>
+  {% endif %}
 
 {% endblock %}

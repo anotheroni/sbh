@@ -5,13 +5,21 @@
 {% if object_list %}
   <ul>
   {% for report in object_list %}
-    <li>{{ report.date }}</li>
+    <li>{{ report.date }}
+    {% if forloop.last and unsignedreport %}
+      <a href="{% url pin.views.new_report %}r{{ report.id }}/">edit</a>
+    {% else %}
+      <a href="{% url pin.views.new_report %}r{{ report.id }}/view/">view</a>
+    {% endif %}
+    </li>
   {% endfor %}
   </ul>
 {% else %}
   <p>No reports are available.</p>
 {% endif %}
 
-<a href="{% url pin.views.new_report %}{{ gid }}/">Create new report</a>
+{% if not unsignedreport %}
+  <a href="{% url pin.views.new_report %}{{ gid }}/">Create new report</a>
+{% endif %}
 
 {% endblock %}

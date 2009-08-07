@@ -7,14 +7,14 @@
     <h1>Pin Application</h1>
     {% block menu%}
       {% if user.is_authenticated %}
-        <a href="{% url django.contrib.auth.views.logout %}">logout</a>
+        {{ user.username }}  <a href="{% url django.contrib.auth.views.logout %}">logout</a>
       {% endif %}
       <hr>
     {% endblock %}
     {% block content %}{% endblock %}
     {% block footer %}
       <hr>
-      <p>Thanks for visiting Pin App from Efficient</p>
+      <p>Pin Application from Efficient</p>
     {% endblock %}
 </body>
 </html>

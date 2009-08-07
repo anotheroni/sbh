@@ -3,17 +3,17 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.models import User
+from django.contrib.auth.models import User
 from sbh.pin.models import Report, GasStation, Pump, PumpStatus, Delivery, FuelTypeData, FuelType, PumpNozle
-#from sbh.pin.forms import get_mechanical_meter_form
-from sbh.pin.forms import MechanicalMeterForm, DeliveryForm, MiscForm
-from datetime import datetime
+from sbh.pin.forms import MechanicalMeterForm, DeliveryForm, MiscForm, ViewReportForm
+from datetime import datetime, timedelta
 
 @login_required() #redirect_field_name='login/') #?next=%s' % request.path)
 def station_list(request):
   station_list = GasStation.objects.all().order_by('name')
   c = RequestContext(request, {'object_list': station_list})
   return render_to_response('pin/station_list.html', c)
-
 
 @login_required()
 def report_list(request, gid=0):
@@ -23,8 +23,14 @@ def report_list(request, gid=0):
   except GasStation.DoesNotExist:
     return HttpResponseRedirect(reverse('pin.views.station_list'))
 
-  report_list = Report.objects.filter(station=gid).order_by('-date')
-  c = RequestContext(request, {'object_list': report_list, 'gid': gid})
+  try:
+    Report.objects.get(station=gid, signature=None)
+    unsignedreport = True
+  except Report.DoesNotExist:
+    unsignedreport = False
+  report_list = Report.objects.filter(station=gid).order_by('date')
+  c = RequestContext(request, {'object_list': report_list, 'gid': gid,
+                               'unsignedreport': unsignedreport})
   return render_to_response('pin/report_list.html', c)
 
 @login_required()
@@ -39,11 +45,11 @@ def new_report(request, gid = 0):
     r = Report.objects.get(station = gid, signature__isnull = True)
   except Report.DoesNotExist:
     try:  # find which is the next date to report
-      rep = Report.objects.get(station = gid).order_by('-date')[0:1]
-      date = rep.date + timedelta(days=1)
+      rep = Report.objects.filter(station = gid).order_by('-date')[0:1]
+      date = rep[0].date + timedelta(days=1)
     except Report.DoesNotExist:  # This is the first report for the station!
       date = datetime.today()
-    r = Report(date = date, station = gs)
+    r = Report(date = date, station = gs, previous = rep[0].id)
     r.save()
   
   return HttpResponseRedirect('/pin/new_report/r%d' % r.id)
@@ -174,6 +180,7 @@ def misc_report(request, rid=0):
   c = RequestContext(request, {'gid': rep.station, 'form': form, 'ft_list': ft_list})
   return render_to_response('pin/misc_report.html', c)
 
+# TODO make sure that a signed report can't be changed
 @login_required()
 def view_report(request, rid=0):
   rid = int(rid)
@@ -181,6 +188,20 @@ def view_report(request, rid=0):
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
     return HttpResponseRedirect(reverse('pin.views.station_list'))
+  
+  if request.method == 'POST':
+    form = ViewReportForm(rep=rep, data=request.POST)
+    if form.is_valid():
+      cd = form.cleaned_data
+      if request.user.check_password(cd['password']):
+        rep.signature = request.user
+        rep.timestamp = datetime.now()
+        rep.save()
+        return HttpResponseRedirect('/pin/report_list/%d' % rep.station.id)
+      else:
+        form.errors.password = "Wrong password"
+  else:
+    form = ViewReportForm(rep=rep)
 
   try:
     prev_rep = Report.objects.get(id = rep.previous)
@@ -315,27 +336,37 @@ def view_report(request, rid=0):
     row15.append(ftdo.elec_meter_reading)
     row17.append(row17tot)
     row19.append(row17tot - row14tot)
-    row21.append(row21tot)	# ftdo.accumulated_elec_diff) TODO save in db
-    row27.append(totaldeliverydict[ft_id])
+    row21.append(row21tot)
+    ftdo.accumulated_elec_diff = row21tot
+    try:
+      totdelivery = totaldeliverydict[ft_id]
+    except KeyError:
+      totdelivery = 0.0
+    row27.append(totdelivery)
     row28.append(ftdo.pin_meter_reading)
     row32.append(ftdo.rundp_data)
-    row33tot = row33tot + ftdo.rundp_data - row14tot + totaldeliverydict[ft_id] 
+    row33tot = row33tot + ftdo.rundp_data - row14tot + totdelivery
     row33.append(row33tot)
     row34.append(ftdo.pin_meter_reading - row33tot)
     if prev_rep:
       row35.append(ftdo_prev.accumulated_storage_diff)
       row36tot = ftdo.pin_meter_reading - row33tot + ftdo_prev.accumulated_storage_diff
-      row36.append(row36tot)	# ftdo.accumulated_storage_diff) TODO save in db
+      row36.append(row36tot)
+      ftdo.accumulated_storage_diff = row36tot
       row37.append(ftdo_prev.accumulated_sold)
-      row39.append(ftdo_prev.accumulated_sold + row14tot)	# ftdo.accumulated_sold)	TODO save in db
+      row39.append(ftdo_prev.accumulated_sold + row14tot)
+      ftdo.accumulated_sold = ftdo_prev.accumulated_sold + row14tot
       row40.append(row36tot * 100 / (ftdo_prev.accumulated_sold + row14tot))
     else:
       row35.append(u"None")
       row36.append(ftdo.pin_meter_reading - row33tot)
+      ftdo.accumulated_storage_diff = ftdo.pin_meter_reading - row33tot
       row37.append(u"None")
-      row39.append(row14tot)	# ftdo.accumulated_sold)	TODO save in db
+      row39.append(row14tot)
+      ftdo.accumulated_sold = row14tot
       row40.append((ftdo.pin_meter_reading - row33tot) * 100 / row14tot)
     row41.append(ftdo.pumpp_data)
+    ftdo.save()
 
   # Add all rows to the page
   page.append(row00)
@@ -373,6 +404,6 @@ def view_report(request, rid=0):
   page.append(row40)
   page.append(row41)
 
-  c = RequestContext(request, {'gid': rep.station, 'page': page})
+  c = RequestContext(request, {'gid': rep.station, 'page': page, 'form': form})
   return render_to_response('pin/view_report.html', c)
 
