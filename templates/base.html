@@ -4,17 +4,22 @@
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
-    <h1>Pin Applikation</h1>
-    {% block menu%}
+    {% block header %}
+      <h1>Applikationer</h1>
+    {% endblock %}
+    <div id="menu">
+    {% block menu %}
       {% if user.is_authenticated %}
         {{ user.username }}  <a href="{% url django.contrib.auth.views.logout %}">logout</a>
       {% endif %}
       <hr>
     {% endblock %}
+    </div>
+    <div id="breadcrumb">{% block breadcrumb %}{% endblock %}</div>
     {% block content %}{% endblock %}
     {% block footer %}
       <hr>
-      <p>Pin Applikation från Efficient</p>
+      <p>Efficient</p>
     {% endblock %}
 </body>
 </html>

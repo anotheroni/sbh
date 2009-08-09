@@ -1,4 +1,8 @@
-{% extends "base.html" %}
+{% extends "pin/base.html" %}
+
+{% block breadcrumb %}
+  {{ block.super}} &raquo; <a href="/pin/report_list/{{ rep.station.id }}" >{{ rep.station.name }}</a> &raquo; <a href="/pin/new_report/r{{ rep.id }}">{{ rep.date }}</a> &raquo; Mekaniska r&auml;kneverk
+{% endblock %}
 
 {% block content %}
 

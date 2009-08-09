@@ -28,7 +28,7 @@ def report_list(request, gid=0):
   except Report.DoesNotExist:
     unsignedreport = False
   report_list = Report.objects.filter(station=gid).order_by('date')
-  c = RequestContext(request, {'object_list': report_list, 'gid': gid,
+  c = RequestContext(request, {'object_list': report_list, 'gs': gs,
                                'unsignedreport': unsignedreport})
   return render_to_response('pin/report_list.html', c)
 
@@ -45,11 +45,11 @@ def new_report(request, gid = 0):
   except Report.DoesNotExist:
     # find which is the next date to report
     rep = Report.objects.filter(station = gid).order_by('-date')[0:1]
-    if rep:
+    try:
       date = rep[0].date + timedelta(days=1)
-    else:  # This is the first report for the station!
-      date = datetime.today()
-    r = Report(date = date, station = gs, previous = rep[0].id)
+      r = Report(date = date, station = gs, previous = rep[0].id)
+    except IndexError:  # This is the first report for the station!
+      r = Report(date = datetime.today(), station = gs, previous = 0)
     r.save()
   
   return HttpResponseRedirect('/pin/new_report/r%d' % r.id)
@@ -62,7 +62,7 @@ def overview_report(request, rid=0):
   except Report.DoesNotExist:
     return HttpResponseRedirect(reverse('pin.views.station_list'))
 
-  c = RequestContext(request, {'report': rep})
+  c = RequestContext(request, {'rep': rep})
   return render_to_response('pin/overview_report.html', c)
   
 
@@ -108,7 +108,7 @@ def mech_report(request, rid=0):
   else:
     form = MechanicalMeterForm(rep=rep)
 
-  c = RequestContext(request, {'gid': rep.station, 'form': form})
+  c = RequestContext(request, {'rep': rep, 'form': form})
   return render_to_response('pin/mech_report.html', c)
 
 @login_required()
@@ -192,7 +192,7 @@ def misc_report(request, rid=0):
 
   ft_list = GasStation.get_used_fuel_types(rep.station)
 
-  c = RequestContext(request, {'gid': rep.station, 'form': form, 'ft_list': ft_list})
+  c = RequestContext(request, {'rep': rep, 'form': form, 'ft_list': ft_list})
   return render_to_response('pin/misc_report.html', c)
 
 @login_required()
@@ -425,7 +425,7 @@ def view_report(request, rid=0):
   page.append(row40)
   page.append(row41)
 
-  c = RequestContext(request, {'gid':rep.station, 'page':page, 'form':form,
+  c = RequestContext(request, {'rep':rep, 'page':page, 'form':form,
                                'signame':signame, 'sigtime':sigtime})
   return render_to_response('pin/view_report.html', c)
 

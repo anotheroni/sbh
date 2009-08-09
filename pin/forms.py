@@ -19,9 +19,9 @@ class MechanicalMeterForm(forms.Form):
     for n in nozles:
       try:
         ps = PumpStatus.objects.get(report = rep, pump_nozle = n)
-        self.fields['%d' % n.id] = forms.FloatField(label = "pn%d_tp%s" % (n.pump.number, n.fuel_type.id), initial=ps.meter_reading)
+        self.fields['%d' % n.id] = forms.FloatField(label = u"Pump %d %s" % (n.pump.number, n.fuel_type.name), initial=ps.meter_reading)
       except:
-        self.fields['%d' % n.id] = forms.FloatField(label = "pn%d_tp%s" % (n.pump.number, n.fuel_type.id))
+        self.fields['%d' % n.id] = forms.FloatField(label = u"Pump %d %s" % (n.pump.number, n.fuel_type.name))
 
   def __unicode__(self):
     return self.fields
@@ -41,8 +41,8 @@ class DeliveryForm(forms.Form):
     for id,name in fdict:
       clist.append((id , name))
 
-    self.fields['amount'] = forms.DecimalField(label = "Mangd")
-    self.fields['type'] = forms.ChoiceField(label = "Typ", choices = clist)
+    self.fields['amount'] = forms.DecimalField(label = u"M&auml;ngd")
+    self.fields['type'] = forms.ChoiceField(label = u"Typ", choices = clist)
 
 
 class MiscForm(forms.Form):

@@ -1,4 +1,13 @@
-{% extends "base.html" %}
+{% extends "pin/base.html" %}
+
+{% block breadcrumb %}
+  {{ block.super}} &raquo; <a href="/pin/report_list/{{ rep.station.id }}" >{{ rep.station.name }}</a>
+  {% if form.password %}
+    &raquo; <a href="/pin/new_report/r{{ rep.id }}">{{ rep.date }}</a> &raquo; Signera
+  {% else %}
+    &raquo; {{ rep.date }}
+  {% endif %}
+{% endblock %}
 
 {% block content %}
 

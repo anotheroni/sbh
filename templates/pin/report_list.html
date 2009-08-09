@@ -1,4 +1,8 @@
-{% extends "base.html" %}
+{% extends "pin/base.html" %}
+
+{% block breadcrumb %}
+  {{ block.super}} &raquo; <a href="/pin/report_list/{{ gs.id }}" >{{ gs.name }}</a>
+{% endblock %}
 
 {% block content %}
 

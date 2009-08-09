@@ -1,4 +1,8 @@
-{% extends "base.html" %}
+{% extends "pin/base.html" %}
+
+{% block breadcrumb %}
+  {{ block.super}} &raquo; <a href="/pin/report_list/{{ rep.station.id }}" >{{ rep.station.name }}</a> &raquo; <a href="/pin/new_report/r{{ rep.id }}">{{ rep.date }}</a> &raquo; &Ouml;vrigt
+{% endblock %}
 
 {% block content %}
 
@@ -16,14 +20,3 @@
   </form>
 
 {% endblock %}
-{#      <tr><th></th>      
-      {% for ft in ft_list %}
-        <th>{{ ft.1 }}</th>
-      {% endfor %}
-      </tr><th>Electric</th>
-      {% for key,value in form.fields %}
-        {% ifequal key "elec_1" %}
-          <td>{{ value }}</td>
-        {% endifequal %}
-      {% endfor %}
-      </tr>#}
