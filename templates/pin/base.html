@@ -2,7 +2,7 @@
 
 {% block header %}<h1>PIN</h1>{% endblock %}
 
-{% block breadcrumb %}{{ block.super}} &raquo; <a href="/pin/">PIN</a>{% endblock %}
+{% block breadcrumb %}{{ block.super}} &raquo; <a href="{% url pin.views.station_list %}">PIN</a>{% endblock %}
 
 {% block footer %}
   <hr>

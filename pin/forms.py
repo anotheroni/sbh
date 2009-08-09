@@ -41,7 +41,7 @@ class DeliveryForm(forms.Form):
     for id,name in fdict:
       clist.append((id , name))
 
-    self.fields['amount'] = forms.DecimalField(label = u"M&auml;ngd")
+    self.fields['amount'] = forms.DecimalField(label = u"Mangd")
     self.fields['type'] = forms.ChoiceField(label = u"Typ", choices = clist)
 
 
