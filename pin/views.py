@@ -4,7 +4,6 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from django.contrib.auth.models import User
 from sbh.pin.models import Report, GasStation, Pump, PumpStatus, Delivery, FuelTypeData, FuelType, PumpNozle
 from sbh.pin.forms import MechanicalMeterForm, DeliveryForm, MiscForm, ViewReportForm
 from datetime import datetime, timedelta
@@ -44,16 +43,16 @@ def new_report(request, gid = 0):
   try:  # Check if there is an unsigned report to continue
     r = Report.objects.get(station = gid, signature__isnull = True)
   except Report.DoesNotExist:
-    try:  # find which is the next date to report
-      rep = Report.objects.filter(station = gid).order_by('-date')[0:1]
+    # find which is the next date to report
+    rep = Report.objects.filter(station = gid).order_by('-date')[0:1]
+    if rep:
       date = rep[0].date + timedelta(days=1)
-    except Report.DoesNotExist:  # This is the first report for the station!
+    else:  # This is the first report for the station!
       date = datetime.today()
     r = Report(date = date, station = gs, previous = rep[0].id)
     r.save()
   
   return HttpResponseRedirect('/pin/new_report/r%d' % r.id)
-#reverse('pin.views.overview_report', args=[r.id, 'ov']))
 
 @login_required()
 def overview_report(request, rid=0):
@@ -128,10 +127,10 @@ def deliv_report(request, rid=0):
         ft = FuelType.objects.get(id = int(cd['type']))
       except FuelType.DoesNotExist:
         # TODO update form is_valid check
-        return HttpResponseRedirect('/pin/new_report/r%d' % rid)
+        return HttpResponseRedirect('/pin/new_report/r%d/deliv' % rid)
       deliv = Delivery(report = rep, fuel_type = ft, station = rep.station , volume = cd['amount'])
       deliv.save()
-      return HttpResponseRedirect('/pin/new_report/r%d' % rid)
+      return HttpResponseRedirect('/pin/new_report/r%d/deliv' % rid)
   else:
     form = DeliveryForm(gs=rep.station)
 
@@ -139,10 +138,26 @@ def deliv_report(request, rid=0):
   o_list = list()
   for d in deliveries:
     x = (d.fuel_type.name, d.volume)
-#  raise OsnO 
 
-  c = RequestContext(request, {'gid': rep.station, 'form': form, 'object_list': deliveries})
+  c = RequestContext(request, {'rep': rep, 'form': form, 'object_list': deliveries})
   return render_to_response('pin/deliv_report.html', c)
+
+@login_required()
+def delete_delivery(request, rid=0, did=0):
+  rid = int(rid)
+  try:	# Make sure report exist, of not redirect
+    rep = Report.objects.get(id = rid)
+  except Report.DoesNotExist:
+    return HttpResponseRedirect(reverse('pin.views.station_list'))
+
+  try:
+    delivery = Delivery.objects.get(id = did)
+    delivery.delete()
+  except Delivery.DoesNotExist:
+    pass
+
+  return HttpResponseRedirect('/pin/new_report/r%d/deliv' % rid)
+
 
 @login_required()
 def misc_report(request, rid=0):
@@ -180,7 +195,6 @@ def misc_report(request, rid=0):
   c = RequestContext(request, {'gid': rep.station, 'form': form, 'ft_list': ft_list})
   return render_to_response('pin/misc_report.html', c)
 
-# TODO make sure that a signed report can't be changed
 @login_required()
 def view_report(request, rid=0):
   rid = int(rid)
@@ -188,8 +202,14 @@ def view_report(request, rid=0):
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
     return HttpResponseRedirect(reverse('pin.views.station_list'))
-  
-  if request.method == 'POST':
+
+  signame = None
+  sigtime = None
+  if rep.signature:	# If report is signed don't updated database or show sign button
+    form = None
+    signame = rep.signature.username
+    sigtime = rep.timestamp
+  elif request.method == 'POST':
     form = ViewReportForm(rep=rep, data=request.POST)
     if form.is_valid():
       cd = form.cleaned_data
@@ -366,7 +386,8 @@ def view_report(request, rid=0):
       ftdo.accumulated_sold = row14tot
       row40.append((ftdo.pin_meter_reading - row33tot) * 100 / row14tot)
     row41.append(ftdo.pumpp_data)
-    ftdo.save()
+    if form:	# Only save if the report isn't signed
+      ftdo.save()
 
   # Add all rows to the page
   page.append(row00)
@@ -404,6 +425,7 @@ def view_report(request, rid=0):
   page.append(row40)
   page.append(row41)
 
-  c = RequestContext(request, {'gid': rep.station, 'page': page, 'form': form})
+  c = RequestContext(request, {'gid':rep.station, 'page':page, 'form':form,
+                               'signame':signame, 'sigtime':sigtime})
   return render_to_response('pin/view_report.html', c)
 

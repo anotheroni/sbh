@@ -7,6 +7,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
     # Example:
     (r'^pin/', include('sbh.pin.urls')),
+    (r'^accounts/$', login), # {'template_name': 'pin/login.html'}),
     (r'^accounts/login/$', login), # {'template_name': 'pin/login.html'}),
     (r'^accounts/logout/$', logout), #, {'template_name': 'pin/logout.html'}),
 

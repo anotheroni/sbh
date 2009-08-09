@@ -1,10 +1,10 @@
 <!DOCTYPE HTML PUBLIC " - //W3C//DTD HTML 4.01//EN">
-<html lang="en">
+<html lang="sv.UTF-8">
 <head>
     <title>{% block title %}{% endblock %}</title>
 </head>
 <body>
-    <h1>Pin Application</h1>
+    <h1>Pin Applikation</h1>
     {% block menu%}
       {% if user.is_authenticated %}
         {{ user.username }}  <a href="{% url django.contrib.auth.views.logout %}">logout</a>
@@ -14,7 +14,7 @@
     {% block content %}{% endblock %}
     {% block footer %}
       <hr>
-      <p>Pin Application from Efficient</p>
+      <p>Pin Applikation från Efficient</p>
     {% endblock %}
 </body>
 </html>

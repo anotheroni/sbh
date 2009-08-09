@@ -27,6 +27,8 @@
       {% endif %}
       <p>{{ form.password.label}}{{ form.password }}<input type="submit" value="Sign" /></p>
     </form>
+  {% else %}
+    Signed by {{ signame}} on {{ sigtime|date:"Ymj-His"}}
   {% endif %}
 
 {% endblock %}
