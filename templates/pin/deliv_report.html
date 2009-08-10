@@ -1,7 +1,7 @@
 {% extends "pin/base.html" %}
 
 {% block breadcrumb %}
-  {{ block.super}} &raquo; <a href="{% url pin.views.report_list %}{{ rep.station.id }}">{{ rep.station.name }}</a> &raquo; <a href="{% url pin.views.new_report %}r{{ rep.id }}">{{ rep.date }}</a> &raquo; Leveranser
+  {{ block.super}} &raquo; <a href="{% url report_list rep.station.id %}">{{ rep.station.name }}</a> &raquo; <a href="{% url overview_report rep.id %}">{{ rep.date }}</a> &raquo; Leveranser
 {% endblock %}
 
 {% block content %}
@@ -15,7 +15,7 @@
   {% if object_list %}
     <ul>
     {% for delivery in object_list %}
-      <li>{{ delivery }} {{ delivery.volume }} <a href="{% url pin.views.new_report %}r{{ rep.id }}/del_deliv/d{{ delivery.id }}/">Delete</a></li>
+      <li>{{ delivery }} {{ delivery.volume }} <a href="{% url delivery_delete rep.id delivery.id %}">Delete</a></li>
     {% endfor %}
     </ul>
   {% else %}

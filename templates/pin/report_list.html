@@ -1,7 +1,7 @@
 {% extends "pin/base.html" %}
 
 {% block breadcrumb %}
-  {{ block.super}} &raquo; <a href="{% url pin.views.report_list %}{{ gs.id }}" >{{ gs.name }}</a>
+  {{ block.super}} &raquo; <a href="{% url report_list gs.id %}" >{{ gs.name }}</a>
 {% endblock %}
 
 {% block content %}
@@ -11,9 +11,9 @@
   {% for report in object_list %}
     <li>{{ report.date }}
     {% if forloop.last and unsignedreport %}
-      <a href="{% url pin.views.new_report %}r{{ report.id }}/">edit</a>
+      <a href="{% url overview_report report.id %}">edit</a>
     {% else %}
-      <a href="{% url pin.views.new_report %}r{{ report.id }}/view/">view</a>
+      <a href="{% url view_report report.id %}">view</a>
     {% endif %}
     </li>
   {% endfor %}
@@ -23,7 +23,7 @@
 {% endif %}
 
 {% if not unsignedreport %}
-  <a href="{% url pin.views.new_report %}{{ gs.id }}/">Create new report</a>
+  <a href="{% url new_report gs.id %}">Create new report</a>
 {% endif %}
 
 {% endblock %}

@@ -20,7 +20,7 @@ def report_list(request, gid=0):
   try:	# Make sure that the Gas Station exists, if not redirect 
     gs = GasStation.objects.get(id = gid)
   except GasStation.DoesNotExist:
-    return HttpResponseRedirect(reverse('pin.views.station_list'))
+    return HttpResponseRedirect(reverse('station_list'))
 
   try:
     Report.objects.get(station=gid, signature=None)
@@ -38,7 +38,7 @@ def new_report(request, gid = 0):
   try:  # Make sure that the Gas Station exists, if not redirect 
     gs = GasStation.objects.get(id = gid)
   except GasStation.DoesNotExist:
-    return HttpResponseRedirect(reverse('pin.views.station_list'))
+    return HttpResponseRedirect(reverse('station_list'))
   
   try:  # Check if there is an unsigned report to continue
     r = Report.objects.get(station = gid, signature__isnull = True)
@@ -52,7 +52,7 @@ def new_report(request, gid = 0):
       r = Report(date = datetime.today(), station = gs, previous = 0)
     r.save()
   
-  return HttpResponseRedirect('/pin/new_report/r%d' % r.id)
+  return HttpResponseRedirect(reverse('overview_report', args=[r.id]))
 
 @login_required()
 def overview_report(request, rid=0):
@@ -60,7 +60,7 @@ def overview_report(request, rid=0):
   try:	# Make sure report exist, of not redirect
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
-    return HttpResponseRedirect(reverse('pin.views.station_list'))
+    return HttpResponseRedirect(reverse('station_list'))
 
   c = RequestContext(request, {'rep': rep})
   return render_to_response('pin/overview_report.html', c)
@@ -72,7 +72,7 @@ def mech_report(request, rid=0):
   try:	# Make sure report exist, of not redirect
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
-    return HttpResponseRedirect(reverse('pin.views.station_list'))
+    return HttpResponseRedirect(reverse('station_list'))
     
   if request.method == 'POST':
     form = MechanicalMeterForm(rep=rep, data=request.POST)
@@ -104,7 +104,7 @@ def mech_report(request, rid=0):
           ftd = FuelTypeData(report = rep, fuel_type = ft, mech_total_today = val)
         ftd.save()
 
-      return HttpResponseRedirect('/pin/new_report/r%d/' % rid)
+      return HttpResponseRedirect(reverse('overview_report', args=[rid]))
   else:
     form = MechanicalMeterForm(rep=rep)
 
@@ -117,7 +117,7 @@ def deliv_report(request, rid=0):
   try:	# Make sure report exist, of not redirect
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
-    return HttpResponseRedirect(reverse('pin.views.station_list'))
+    return HttpResponseRedirect(reverse('station_list'))
 
   if request.method == 'POST':
     form = DeliveryForm(gs=rep.station, data=request.POST)
@@ -127,10 +127,10 @@ def deliv_report(request, rid=0):
         ft = FuelType.objects.get(id = int(cd['type']))
       except FuelType.DoesNotExist:
         # TODO update form is_valid check
-        return HttpResponseRedirect('/pin/new_report/r%d/deliv' % rid)
+        return HttpResponseRedirect(reverse('delivery_report', args=[rid]))
       deliv = Delivery(report = rep, fuel_type = ft, station = rep.station , volume = cd['amount'])
       deliv.save()
-      return HttpResponseRedirect('/pin/new_report/r%d/deliv' % rid)
+      return HttpResponseRedirect(reverse('delivery_report', args=[rid]))
   else:
     form = DeliveryForm(gs=rep.station)
 
@@ -148,7 +148,7 @@ def delete_delivery(request, rid=0, did=0):
   try:	# Make sure report exist, of not redirect
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
-    return HttpResponseRedirect(reverse('pin.views.station_list'))
+    return HttpResponseRedirect(reverse('station_list'))
 
   try:
     delivery = Delivery.objects.get(id = did)
@@ -156,7 +156,7 @@ def delete_delivery(request, rid=0, did=0):
   except Delivery.DoesNotExist:
     pass
 
-  return HttpResponseRedirect('/pin/new_report/r%d/deliv' % rid)
+  return HttpResponseRedirect(reverse('delivery_report', args=[rid]))
 
 
 @login_required()
@@ -165,7 +165,7 @@ def misc_report(request, rid=0):
   try:	# Make sure report exist, of not redirect
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
-    return HttpResponseRedirect(reverse('pin.views.station_list'))
+    return HttpResponseRedirect(reverse('station_list'))
 
   if request.method == 'POST':
     form = MiscForm(rep = rep, data = request.POST)
@@ -186,7 +186,9 @@ def misc_report(request, rid=0):
                  rundp_data = float(cd['rp_%d' % ft_id]),
                  pumpp_data = float(cd['pp_%d' % ft_id]))
         ftdo.save()
-      return HttpResponseRedirect('/pin/new_report/r%d' % rid)
+      return HttpResponseRedirect(reverse('overview_report', args=[rid]))
+    else:
+      pass  # TODO propper error handling
   else:
     form = MiscForm(rep=rep)
 
@@ -201,7 +203,7 @@ def view_report(request, rid=0):
   try:	# Make sure report exist, of not redirect
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
-    return HttpResponseRedirect(reverse('pin.views.station_list'))
+    return HttpResponseRedirect(reverse('station_list'))
 
   signame = None
   sigtime = None
@@ -217,7 +219,7 @@ def view_report(request, rid=0):
         rep.signature = request.user
         rep.timestamp = datetime.now()
         rep.save()
-        return HttpResponseRedirect('/pin/report_list/%d' % rep.station.id)
+        return HttpResponseRedirect(reverse('report_list', args=[rep.station.id]))
       else:
         form.errors.password = "Wrong password"
   else:

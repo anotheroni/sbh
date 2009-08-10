@@ -5,7 +5,7 @@
 {% if object_list %}
   <ul>
   {% for station in object_list %}
-    <li><a href="{% url pin.views.report_list %}{{ station.id }}/">{{ station.name }}</a></li>
+    <li><a href="{% url report_list station.id %}">{{ station.name }}</a></li>
   {% endfor %}
   </ul>
 {% else %}

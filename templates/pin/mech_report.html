@@ -1,7 +1,7 @@
 {% extends "pin/base.html" %}
 
 {% block breadcrumb %}
-  {{ block.super}} &raquo; <a href="{% url pin.views.report_list %}{{ rep.station.id }}" >{{ rep.station.name }}</a> &raquo; <a href="{% url pin.views.new_report %}r{{ rep.id }}">{{ rep.date }}</a> &raquo; Mekaniska r&auml;kneverk
+  {{ block.super}} &raquo; <a href="{% url report_list rep.station.id %}" >{{ rep.station.name }}</a> &raquo; <a href="{% url overview_report rep.id %}">{{ rep.date }}</a> &raquo; Mekaniska r&auml;kneverk
 {% endblock %}
 
 {% block content %}
