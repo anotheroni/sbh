@@ -309,8 +309,6 @@ def view_report(request, rid=0):
     except:
       ftdo_prev = None
 
-    row14tot = 0.0
-
     for pumprow in pumprowlist:
       try:
         val = pumpsolddict[(pumprow[0], ft_id)]
@@ -318,7 +316,7 @@ def view_report(request, rid=0):
       except:
         pumprow.append("")
     row10.append(ftdo.mech_total_today)
-    row14tot = row14tot + ftdo.mech_total_today
+    row14tot = ftdo.mech_total_today
 
     for i, pumprow in enumerate(newpumplist):
       try:
@@ -378,7 +376,10 @@ def view_report(request, rid=0):
       row37.append(ftdo_prev.accumulated_sold)
       row39.append(ftdo_prev.accumulated_sold + row14tot)
       ftdo.accumulated_sold = ftdo_prev.accumulated_sold + row14tot
-      row40.append(row36tot * 100 / (ftdo_prev.accumulated_sold + row14tot))
+      try:
+        row40.append(row36tot * 100 / (ftdo_prev.accumulated_sold + row14tot))
+      except ZeroDivisionError:
+        row40.append("Inf")
     else:
       row35.append(u"None")
       row36.append(ftdo.pin_meter_reading - row33tot)
@@ -386,7 +387,10 @@ def view_report(request, rid=0):
       row37.append(u"None")
       row39.append(row14tot)
       ftdo.accumulated_sold = row14tot
-      row40.append((ftdo.pin_meter_reading - row33tot) * 100 / row14tot)
+      try:
+        row40.append((ftdo.pin_meter_reading - row33tot) * 100 / row14tot)
+      except ZeroDivisionError:
+        row40.append("Inf")
     row41.append(ftdo.pumpp_data)
     if form:	# Only save if the report isn't signed
       ftdo.save()
