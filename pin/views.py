@@ -1,3 +1,4 @@
+import re   # regexp
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
 from django.template import RequestContext
@@ -7,6 +8,8 @@ from django.contrib.auth.models import User
 from sbh.pin.models import Report, GasStation, Pump, PumpStatus, Delivery, FuelTypeData, FuelType, PumpNozle
 from sbh.pin.forms import MechanicalMeterForm, DeliveryForm, MiscForm, ViewReportForm
 from datetime import datetime, timedelta
+
+#from django.forms import BoundField
 
 @login_required() #redirect_field_name='login/') #?next=%s' % request.path)
 def station_list(request):
@@ -79,20 +82,23 @@ def mech_report(request, rid=0):
     if form.is_valid():
       cd = form.cleaned_data
       ft_dict = dict()
-      for ft_id,name in GasStation.get_used_fuel_types(rep.station):
+      # Create dict with fuel type totals 
+      for ft_id, name in GasStation.get_used_fuel_types(rep.station):
         ft_dict[ft_id] = 0.0
-      for data in cd:
+      # Iterat all fields
+      for name, val in cd.items():
         try:
-          pn = PumpNozle.objects.get(id = data)
+          m = re.search('^(\d+)_(\d+)$', name)
+          pn = PumpNozle.objects.get(pump = m.group(1), fuel_type=m.group(2))
         except PumpNozle.DoesNotExist:
           continue
         else:
           try:
             ps = PumpStatus.objects.get(report = rep, pump_nozle = pn)
-            ps.meter_reading = cd[data]
+            ps.meter_reading = val
           except:
-            ps = PumpStatus(report = rep, pump_nozle = pn, meter_reading = cd[data])
-          ft_dict[pn.fuel_type.id] = ft_dict[pn.fuel_type.id] + cd[data]
+            ps = PumpStatus(report = rep, pump_nozle = pn, meter_reading = val)
+          ft_dict[pn.fuel_type.id] = ft_dict[pn.fuel_type.id] + val
           ps.save()
 
       for id,val in ft_dict.iteritems():  # Save fuel_type total 
@@ -107,6 +113,10 @@ def mech_report(request, rid=0):
       return HttpResponseRedirect(reverse('overview_report', args=[rid]))
   else:
     form = MechanicalMeterForm(rep=rep)
+
+  #for name, field in form.fields.items():
+    #bf = BoundField(form, field, name)
+
 
   c = RequestContext(request, {'rep': rep, 'form': form})
   return render_to_response('pin/mech_report.html', c)
