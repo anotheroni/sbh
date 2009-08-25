@@ -97,7 +97,8 @@ class MiscForm(forms.Form):
                     label="%s %s" % (mf_label, ft_name),
                     initial=ftdo.__dict__[mf_attr])
       except:
-        self.fields['%s_%d' % (mf_id, ft_id)] = forms.DecimalField(
+        for mf_id, mf_label, mf_attr in self.misc_fields:
+          self.fields['%s_%d' % (mf_id, ft_id)] = forms.DecimalField(
                     label="%s %s" % (mf_label, ft_name))
 
   def as_spsh(self):
