@@ -1,0 +1,47 @@
+body{
+    text-align:center;
+}
+#formTable
+{
+	background-color: #eeece7;
+	border: 1px #6699CC solid;
+	border-collapse: collapse;
+	border-spacing: 0px;
+	margin-left: auto;
+	margin-right: auto;
+
+}
+tr{
+	border-bottom: 1px #6699CC dotted;
+	text-align: left;
+	font-family: Verdana, sans-serif, Arial;
+	font-weight: normal;
+	font-size: .7em;
+	color: #404040;
+	padding-top: 4px;
+	padding-bottom: 4px;
+	padding-left: 8px;
+	padding-right: 0px;
+}
+.activTextBoxes
+{
+	 border: #8daab7 1px solid;
+	 background-color:#ffffff;
+}
+.passiveTextBoxes
+{
+  border: #8daab7 1px solid;
+  background-color:#D8D8D8;
+}
+.formTitles{
+    text-align:left;
+    background-color:#ffffff;
+    color:teal;
+    font-weight: bold;
+}
+.formButtons
+{
+	background-color:#eff0ed;
+	border:1px solid;
+	font: 12px helvetica,sans-serif;
+}
