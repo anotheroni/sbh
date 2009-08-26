@@ -11,4 +11,3 @@ urlpatterns = patterns('',
   url(r'^report/(?P<rid>\d+)/misc/$', 'pin.views.misc_report', name="misc_report"),
   url(r'^report/(?P<rid>\d+)/view/$', 'pin.views.view_report', name="view_report"),
 )
-
