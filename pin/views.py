@@ -347,7 +347,7 @@ def view_report(request, rid=0):
     row17tot = ftdo.elec_meter_reading
     row21tot = 0.0
     row33tot = 0.0
-    if prev_rep:
+    if prev_rep and ftdo_prev:
       row11.append(ftdo_prev.mech_total_today)
       row14.append(row14tot - ftdo_prev.mech_total_today)
       row16.append(ftdo_prev.elec_meter_reading)
@@ -378,7 +378,7 @@ def view_report(request, rid=0):
     row33tot = row33tot + ftdo.rundp_data - row14tot + totdelivery
     row33.append(row33tot)
     row34.append(ftdo.pin_meter_reading - row33tot)
-    if prev_rep:
+    if prev_rep and ftdo_prev:
       row35.append(ftdo_prev.accumulated_storage_diff)
       row36tot = ftdo.pin_meter_reading - row33tot + ftdo_prev.accumulated_storage_diff
       row36.append(row36tot)
