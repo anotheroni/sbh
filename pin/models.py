@@ -72,15 +72,23 @@ class Report(models.Model):
     return (len(Delivery.objects.filter(report = self.id)) != 0)
 
   def has_fuel_type_data(self):
+    if self.signature != None:
+      return True
     for ft_id, ft_name in GasStation.get_used_fuel_types(self.station):
-      ftdo = FuelTypeData.objects.get(report = self, fuel_type = ft_id)
+      try:
+        ftdo = FuelTypeData.objects.get(report = self, fuel_type = ft_id)
+      except FuelTypeData.DoesNotExist:
+        return False
       if ftdo.elec_meter_reading is None or ftdo.pin_meter_reading is None \
             or ftdo.rundp_data is None or ftdo.pumpp_data is None:
         return False
     return True
 
   def is_complete(self):
-    return (self.has_mech_data() and self.has_fuel_type_data())
+    try:
+      return (self.has_mech_data() and self.has_fuel_type_data())
+    except FuelTypeData.DoesNotExist:
+      return False
 
 class FuelTypeData(models.Model):
   report = models.ForeignKey(Report)
