@@ -14,15 +14,11 @@
       {% if user.is_authenticated %}
         {{ user.username }}  <a href="{% url django.contrib.auth.views.logout %}">logout</a>
       {% endif %}
-      <hr>
     {% endblock %}
     </div>
-    <div id="breadcrumb">{% block breadcrumb %}{% endblock %}</div>
+    <div id="main_menu_div">{% block breadcrumb %}{% endblock %}</div>
     {% block content %}{% endblock %}
-    {% block footer %}
-      <hr>
-      <p>Efficient</p>
-    {% endblock %}
+    {% block footer %}{% endblock %}
   </div></center>
 </body>
 </html>

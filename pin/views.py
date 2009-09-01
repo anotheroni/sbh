@@ -240,7 +240,10 @@ def view_report(request, rid=0):
   except Report.DoesNotExist:
     prev_rep = None
 
-  ft_list = GasStation.get_used_fuel_types(rep.station)
+  if rep.is_complete():
+    ft_list = Report.get_used_fuel_types(rep)
+  else:
+    ft_list = GasStation.get_used_fuel_types(rep.station)
   page = list()
   row00 = [u"#", "#"]
   row10 = [u"S:a matarstallning idag", "="]

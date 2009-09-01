@@ -55,6 +55,16 @@ class Report(models.Model):
   version = models.IntegerField(default=0)
   previous = models.IntegerField(unique=True, null=True) 
 
+  # Returns a list contaning all fuel types available at the station order by name
+  def get_used_fuel_types(self):
+    result = list()
+    all_nozles = FuelTypeData.objects.filter(report = self.id).order_by('fuel_type__name')
+    for nozle in all_nozles:
+      val = (nozle.fuel_type.id, nozle.fuel_type.name)
+      if val not in result:
+        result.append(val)
+    return result
+
   def has_mech_data(self):
     return (len(PumpStatus.objects.filter(report = self.id)) != 0)
 
