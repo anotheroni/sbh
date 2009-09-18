@@ -8,10 +8,9 @@
 
 {% if rep %}
   <ul>
-    <li><a href="{% url mech_report rep.id %}">Mekaniskaräkneverk</a>{% if rep.has_mech_data %} GOOD {% else %} BAD {% endif %}
-</li>
-    <li><a href="{% url delivery_report rep.id %}">Leveranser</a>{% if rep.has_delivery_data %} YES {% else %} NONE {% endif %}</li>
-    <li><a href="{% url misc_report rep.id %}">Övrigt</a>{% if rep.has_fuel_type_data %} GOOD {% else %} BAD {% endif %}</li>
+    <li><a href="{% url mech_report rep.id %}">Mekaniskaräkneverk</a>{% if rep.has_mech_data %}<img src="/site_media/images/ok.png" alt="OK">{% else %}<img src="/site_media/images/notok.png" alt="Ej Ok">{% endif %}</li>
+    <li><a href="{% url delivery_report rep.id %}">Leveranser</a>{% if rep.has_delivery_data %}<img src="/site_media/images/ok.png" alt="OK">{% else %}<img src="/site_media/images/none.png" alt="Ingen">{% endif %}</li>
+    <li><a href="{% url misc_report rep.id %}">Övrigt</a>{% if rep.has_fuel_type_data %}<img src="/site_media/images/ok.png" alt="OK">{% else %}<img src="/site_media/images/notok.png" alt="Ej Ok">{% endif %}</li>
   {% if rep.is_complete %}
     <li><a href="{% url view_report rep.id %}">Signera</a></li>
   {% endif %}

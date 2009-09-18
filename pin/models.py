@@ -22,6 +22,15 @@ class GasStation(models.Model):
         result.append(val)
     return result
 
+# Class granting user rights to gasstations
+class UserAuth(models.Model):
+  user = models.ForeignKey(User)
+  gasstation = models.ForeignKey(GasStation)
+  level = models.IntegerField(default=0)
+
+  def __unicode__(self):
+    return u"%s - %s" % (self.user.username, self.gasstation.name)
+
 class FuelType(models.Model):
   name = models.CharField(max_length=100)
 
