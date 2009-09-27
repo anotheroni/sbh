@@ -1,3 +1,4 @@
+# coding: utf-8
 import re   # regexp
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render_to_response
@@ -52,7 +53,7 @@ def new_report(request, gid = 0):
       date = rep[0].date + timedelta(days=1)
       r = Report(date = date, station = gs, previous = rep[0].id)
     except IndexError:  # This is the first report for the station!
-      r = Report(date = datetime.today(), station = gs, previous = 0)
+      r = Report(date = datetime.today(), station = gs, previous = None)
     r.save()
   
   return HttpResponseRedirect(reverse('overview_report', args=[r.id]))
@@ -231,7 +232,7 @@ def view_report(request, rid=0):
         rep.save()
         return HttpResponseRedirect(reverse('report_list', args=[rep.station.id]))
       else:
-        form.errors.password = "Wrong password"
+        form.errors.password = "Felaktigt Lösenord"
   else:
     form = ViewReportForm(rep=rep)
 
@@ -245,15 +246,15 @@ def view_report(request, rid=0):
   else:
     ft_list = GasStation.get_used_fuel_types(rep.station)
   page = list()
-  row00 = [u"#", "#"]
-  row10 = [u"S:a matarstallning idag", "="]
-  row11 = [u"Matarstallning foregaende", "-"]
-  row14 = [u"Salda liter", "="]
-  row15 = [u"Avlasning registerstallning idag", "+"]
-  row16 = [u"Registerstallning foregaende", "-"]
-  row17 = [u"Salda liter enligt elektr rakneverk", "="]
+  row00 = [u"", "#"]
+  row10 = [u"S:a mätarställning idag", "="]
+  row11 = [u"Mätarställning föregående", "-"]
+  row14 = [u"Sålda liter", "="]
+  row15 = [u"Avläsning registerställning idag", "+"]
+  row16 = [u"Registerställning föregående", "-"]
+  row17 = [u"Sålda liter enligt elektr räkneverk", "="]
   row19 = [u"Differens idag", "="]
-  row20 = [u"Differens foregaende", "+"]
+  row20 = [u"Differens föregående", "+"]
   row21 = [u"Ack differens", "="]
   row27 = [u"Summa inleveranser", "="]
   row28 = [u"Pejlat lager idag", ""]
@@ -261,10 +262,10 @@ def view_report(request, rid=0):
   row32 = [u"Rundpumpning", "+"]
   row33 = [u"Teoretisk lager idag", "="]
   row34 = [u"Lagerdifferens idag", "="]
-  row35 = [u"Ack lagerdifferens foregaende", "="]
+  row35 = [u"Ack lagerdifferens föregående", "="]
   row36 = [u"Ack lagerdifferens", "="]
-  row37 = [u"Ack forslajning foregaende", "+"]
-  row39 = [u"Ack forsaljning", "="]
+  row37 = [u"Ack försäljning föregående", "+"]
+  row39 = [u"Ack försäljning", "="]
   row40 = [u"Ack lagerdifferens i %", "="]
   row41 = [u"Pumppris idag", ""]
 
@@ -279,21 +280,21 @@ def view_report(request, rid=0):
     pumpsolddict[(pump_num, pump.pump_nozle.fuel_type.id)] = pump.meter_reading
   pumpnumlist.sort()
   for pump_num in pumpnumlist:
-    pumprowlist.append([pump_num, "+"])
+    pumprowlist.append([u"Pump %d" % pump_num, "+"])
 
   # Find new pumps to create row 12
   newpumplist = list()
   newpumpdict = dict()
-  for pump in Pump.objects.filter(add_date = rep.date):
-    newpumplist.append([u"Ing matarstallning ny pump %d" % pump.number, "-"])
+  for pump in Pump.objects.filter(station = rep.station, add_date = rep.date):
+    newpumplist.append([u"Ing. mätarställning ny pump %d" % pump.number, "-"])
     for pumpnozle in PumpNozle.objects.filter(pump = pump):
       newpumpdict[(len(newpumplist), pumpnozle.fuel_type.id)] = pumpnozle.initial_meter_value
 
   # Find removed pumps to create row 13
   removedpumplist = list()
   removedpumpdict = dict()
-  for pump in Pump.objects.filter(removal_date = rep.date):
-    removedpumplist.append([u"Utg matarstallning borttagen pump %s" % pump.number, "+"])
+  for pump in Pump.objects.filter(station = rep.station, removal_date = rep.date):
+    removedpumplist.append([u"Utg. mätars. borttagen pump %s" % pump.number, "+"])
     for pumpnozle in PumpNozle.objects.filter(pump = pump):
       removedpumpdict[(len(removedpumplist), pumpnozle.fuel_type.id)] = pumpnozle.initial_meter_value
 

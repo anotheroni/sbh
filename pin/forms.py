@@ -1,3 +1,4 @@
+# coding: utf-8
 from django import forms
 from django.forms.forms import BoundField
 from django.utils.safestring import mark_safe
@@ -73,15 +74,17 @@ class DeliveryForm(forms.Form):
     for id,name in fdict:
       clist.append((id , name))
 
-    self.fields['amount'] = forms.DecimalField(label = u"Mangd")
+    self.fields['amount'] = forms.DecimalField(label = u"Mängd")
     self.fields['type'] = forms.ChoiceField(label = u"Typ", choices = clist)
 
 
 class MiscForm(forms.Form):
   
   station = None
-  misc_fields = [('elec', u'Elektrisk matare', 'elec_meter_reading'), ('pin', u'Pin matare', 'pin_meter_reading'),
-                 ('rp', u'Rundpumpning', 'rundp_data'), ('pp', u'Pumppris', 'pumpp_data')]
+  misc_fields = [('elec', u'Elektrisk mätare', 'elec_meter_reading'),
+                 ('pin', u'Pin mätare', 'pin_meter_reading'),
+                 ('rp', u'Rundpumpning', 'rundp_data'),
+                 ('pp', u'Pumppris', 'pumpp_data')]
 
   def __init__(self, rep, *args, **kwargs):
     super(MiscForm, self).__init__(*args, **kwargs)

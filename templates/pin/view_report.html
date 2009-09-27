@@ -13,7 +13,7 @@
 
   {% if form.errors %}
     <p style="color: red;">
-      Please correct the error{{ form.errors|pluralize }} bellow.
+      Det finns fel i formuläret.
     </p>
   {% endif %}
 
@@ -34,10 +34,10 @@
       {% if form.errors %}
         {{ form.errors.password }}
       {% endif %}
-      <p>{{ form.password.label}}{{ form.password }}<input type="submit" value="Sign" /></p>
+      <p>Lösenord {{ form.password }}<input type="submit" value="Signera" /></p>
     </form>
   {% else %}
-    Signed by {{ signame}} on {{ sigtime|date:"Ymj-His"}}
+    Signerad av {{ signame}} {{ sigtime|date:"Ymj-His"}}
   {% endif %}
 
 {% endblock %}

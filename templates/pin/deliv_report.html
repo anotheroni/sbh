@@ -8,18 +8,18 @@
 
   {% if form.errors %}
     <p style="color: red;">
-      Please correct the error{{ form.errors|pluralize }} bellow.
+      Det finns fel i formuläret.
     </p>
   {% endif %}
 
   {% if object_list %}
     <ul>
     {% for delivery in object_list %}
-      <li>{{ delivery }} {{ delivery.volume }} <a href="{% url delivery_delete rep.id delivery.id %}">Delete</a></li>
+      <li>{{ delivery }} {{ delivery.volume }} <a href="{% url delivery_delete rep.id delivery.id %}"><img src="/site_media/images/remove.png" alt="Delete"></a></li>
     {% endfor %}
     </ul>
   {% else %}
-    <p> No deliveries.</p>
+    <p>Inga leveranser registrerade</p>
   {% endif %}
 
   <hr>
