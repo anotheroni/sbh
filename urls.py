@@ -8,6 +8,7 @@ admin.autodiscover()
 urlpatterns = patterns('',
     # Example:
     (r'^pin/', include('sbh.pin.urls')),
+    (r'^rsh/', include('sbh.rsh.urls')),
     (r'^accounts/$', login), # {'template_name': 'pin/login.html'}),
     (r'^accounts/login/$', login), # {'template_name': 'pin/login.html'}),
     (r'^accounts/logout/$', logout), #, {'template_name': 'pin/logout.html'}),
@@ -19,6 +20,7 @@ urlpatterns = patterns('',
     (r'^admin/(.*)', admin.site.root),
 )
 
+# Needed on django test server, but not on apache
 if settings.DEBUG:
     urlpatterns += patterns('',
         (r'^site_media/(?P<path>.*)$', 'django.views.static.serve', {'document_root': 'media'}),

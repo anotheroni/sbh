@@ -245,7 +245,12 @@ def view_report(request, rid=0):
     ft_list = Report.get_used_fuel_types(rep)
   else:
     ft_list = GasStation.get_used_fuel_types(rep.station)
-  page = list()
+  page_amr = list()
+  page_aer = list()
+  page_inl = list()
+  page_lai = list()
+  page_ldb = list()
+
   row00 = [u"", "#"]
   row10 = [u"S:a mätarställning idag", "="]
   row11 = [u"Mätarställning föregående", "-"]
@@ -410,42 +415,48 @@ def view_report(request, rid=0):
       ftdo.save()
 
   # Add all rows to the page
-  page.append(row00)
-  page = page + pumprowlist
-  page.append(row10)
-  page.append(row11)
-  page = page + newpumplist
-  page = page + removedpumplist
-  page.append(row14)
-  page.append(row15)
-  page.append(row16)
-  page.append(row17)
-  row14[1] = "-"
-  page.append(row14)	# row18
-  page.append(row19)
-  page.append(row20)
-  page.append(row21)
-  page = page + deliveryrowlist
-  page.append(row27)
-  page.append(row28)
-  page.append(row29)
-  row27[1] = "+"
-  page.append(row27)	# row30
-  row14[1] = "-"
-  page.append(row14)	# row31
-  page.append(row32)
-  page.append(row33)
-  page.append(row34)
-  page.append(row35)
-  page.append(row36)
-  page.append(row37)
-  row14[1] = "+"
-  page.append(row14)	# row38
-  page.append(row39)
-  page.append(row40)
-  page.append(row41)
+  page_amr.append(row00)
+  page_amr += pumprowlist
+  page_amr.append(row10)
+  page_amr.append(row11)
+  page_amr += newpumplist
+  page_amr += removedpumplist
+  page_amr.append(row14)
 
-  c = RequestContext(request, {'rep':rep, 'page':page, 'form':form,
+  page_aer.append(row15)
+  page_aer.append(row16)
+  page_aer.append(row17)
+  row14[1] = "-"
+  page_aer.append(row14)	# row18
+  page_aer.append(row19)
+  page_aer.append(row20)
+  page_aer.append(row21)
+
+  page_inl += deliveryrowlist
+  page_inl.append(row27)
+
+  page_lai.append(row28)
+  page_lai.append(row29)
+  row27[1] = "+"
+  page_lai.append(row27)	# row30
+  row14[1] = "-"
+  page_lai.append(row14)	# row31
+  page_lai.append(row32)
+  page_lai.append(row33)
+  page_lai.append(row34)
+
+  page_ldb.append(row35)
+  page_ldb.append(row36)
+  page_ldb.append(row37)
+  row14[1] = "+"
+  page_ldb.append(row14)	# row38
+  page_ldb.append(row39)
+  page_ldb.append(row40)
+  page_ldb.append(row41)
+
+  c = RequestContext(request, {'rep':rep, 'form':form, 'page_amr':page_amr,
+                               'page_aer':page_aer, 'page_inl':page_inl,
+                               'page_lai':page_lai, 'page_ldb':page_ldb, 
                                'signame':signame, 'sigtime':sigtime})
   return render_to_response('pin/view_report.html', c)
 

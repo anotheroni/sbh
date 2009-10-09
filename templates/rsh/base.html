@@ -1,0 +1,10 @@
+{% extends "base.html" %}
+
+{% block header %}<h1>PIN</h1>{% endblock %}
+
+{% block breadcrumb %}{{ block.super}} &raquo; <a href="{% url station_list %}">RSH</a>{% endblock %}
+
+{% block footer %}
+  <hr>
+  <p>En Applikation från Efficient</p>
+{% endblock %}

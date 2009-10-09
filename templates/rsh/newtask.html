@@ -1,0 +1,24 @@
+{% extends "rsh/base.html" %}
+
+{% block breadcrumb %}
+  {{ block.super}} &raquo; <a href="{% url task_management %}">Uppgifts lista</a> &raquo; Ny Uppgift
+{% endblock %}
+
+{% block content %}
+
+  {% if form.errors %}
+    <p style="color: red;">
+      Det finns fel i formuläret.
+    </p>
+  {% endif %}
+
+  <hr>
+
+  <form action="" method="post">
+    <table>
+      {{ form.as_table }}
+    </table>
+    <input type="submit" value="Submit">
+  </form>
+
+{% endblock %}

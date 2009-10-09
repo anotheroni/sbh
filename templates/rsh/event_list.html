@@ -1,0 +1,23 @@
+{% extends "rsh/base.html" %}
+
+{% block breadcrumb %}
+  {{ block.super}} &raquo; <a href="{% url task_list %}" >gs.name</a>
+{% endblock %}
+
+{% block content %}
+
+{% if object_list %}
+  <ul>
+  {% for event in object_list %}
+    <li>{{ event.name }}
+      <a href="{% url event event.id %}">edit</a>
+    </li>
+  {% endfor %}
+  </ul>
+{% else %}
+  <p>Det finns inga aktiviter</p>
+{% endif %}
+
+  <a href="{% url newtask %}">Skapa ny aktivitet</a>
+
+{% endblock %}

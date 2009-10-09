@@ -17,8 +17,61 @@
     </p>
   {% endif %}
 
+  Avstämning mekaniska räkneverk
   <table id="formTable">
-  {% for row in page %}
+  {% for row in page_amr %}
+    <tr>
+    {% for col in row %}
+      {% if forloop.parentloop.first or forloop.first %}<th>{% else %}<td>{% endif %}
+      {{ col }}
+      {% if forloop.parentloop.first or forloop.first %}</th>{% else %}</td>{% endif %}
+    {% endfor %}
+    </tr>
+  {% endfor %}
+  </table>
+
+  Avstämning elektroniska räkneverk
+  <table id="formTable">
+  {% for row in page_aer %}
+    <tr>
+    {% for col in row %}
+      {% if forloop.parentloop.first or forloop.first %}<th>{% else %}<td>{% endif %}
+      {{ col }}
+      {% if forloop.parentloop.first or forloop.first %}</th>{% else %}</td>{% endif %}
+    {% endfor %}
+    </tr>
+  {% endfor %}
+  </table>
+
+  Inleveranser
+  <table id="formTable">
+  {% for row in page_inl %}
+    <tr>
+    {% for col in row %}
+      {% if forloop.parentloop.first or forloop.first %}<th>{% else %}<td>{% endif %}
+      {{ col }}
+      {% if forloop.parentloop.first or forloop.first %}</th>{% else %}</td>{% endif %}
+    {% endfor %}
+    </tr>
+  {% endfor %}
+  </table>
+
+  Lageravstämmning idag
+  <table id="formTable">
+  {% for row in page_lai %}
+    <tr>
+    {% for col in row %}
+      {% if forloop.parentloop.first or forloop.first %}<th>{% else %}<td>{% endif %}
+      {{ col }}
+      {% if forloop.parentloop.first or forloop.first %}</th>{% else %}</td>{% endif %}
+    {% endfor %}
+    </tr>
+  {% endfor %}
+  </table>
+ 
+  Lagerdifferens från bokföringsårets början
+  <table id="formTable">
+  {% for row in page_ldb %}
     <tr>
     {% for col in row %}
       {% if forloop.parentloop.first or forloop.first %}<th>{% else %}<td>{% endif %}
