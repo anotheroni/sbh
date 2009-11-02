@@ -3,6 +3,7 @@
 <link rel="stylesheet" href="/site_media/css/style.css" type="text/css"> 
 <head>
     <title>{% block title %}{% endblock %}</title>
+    {% block extra_head %}{% endblock %}
 </head>
 <body>
   <center><div id="mainContainer">
@@ -16,7 +17,7 @@
       {% endif %}
     {% endblock %}
     </div>
-    <div id="main_menu_div">{% block breadcrumb %}{% endblock %}</div>
+    <div id="main_menu_div">{% block breadcrumb %}<a href="{% url program_list %}">SBH</a>{% endblock %}</div>
     {% block content %}{% endblock %}
     {% block footer %}{% endblock %}
   </div></center>

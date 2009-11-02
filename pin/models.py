@@ -1,36 +1,18 @@
 # coding: utf-8
 from django.db import models
 from django.contrib.auth.models import User
+from sbh.main.models import GasStation
 
-# Create your models here.
-
-class GasStation(models.Model):
-  name = models.CharField(max_length=100)
-  address = models.CharField(max_length=100)
-  phone = models.CharField(max_length=30)
-  company = models.CharField(max_length=100)
-
-  def __unicode__(self):
-    return self.name
-
-  # Returns a list contaning all fuel types available at the station order by name
-  def get_used_fuel_types(self):
-    result = list()
-    all_nozles = PumpNozle.objects.filter(pump__station = self.id).order_by('fuel_type__name')
-    for nozle in all_nozles:
-      val = (nozle.fuel_type.id, nozle.fuel_type.name)
-      if val not in result:
-        result.append(val)
-    return result
-
-# Class granting user rights to gasstations
-class UserAuth(models.Model):
-  user = models.ForeignKey(User)
-  gasstation = models.ForeignKey(GasStation)
-  level = models.IntegerField(default=0)
-
-  def __unicode__(self):
-    return u"%s - %s" % (self.user.username, self.gasstation.name)
+# Returns a list contaning all fuel types available at station order by name
+def get_used_fuel_types(gid):
+  result = list()
+  # importing PumpNozle gives a circular reference
+  all_nozles = PumpNozle.objects.filter(pump__station = gid).order_by('fuel_type__name')
+  for nozle in all_nozles:
+    val = (nozle.fuel_type.id, nozle.fuel_type.name)
+    if val not in result:
+      result.append(val)
+  return result
 
 class FuelType(models.Model):
   name = models.CharField(max_length=100)

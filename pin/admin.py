@@ -1,4 +1,6 @@
-from sbh.pin.models import GasStation, UserAuth, FuelType, Pump, PumpNozle
+# coding: utf-8
+from sbh.pin.models import FuelType, Pump, PumpNozle
+from sbh.main.models import GasStation
 from django.contrib import admin
 
 #class GasStationForm(forms.ModelForm):
@@ -28,5 +30,3 @@ class PumpAdmin(admin.ModelAdmin):
 admin.site.register(GasStation, GasStationAdmin)
 admin.site.register(FuelType)
 admin.site.register(Pump, PumpAdmin)
-#admin.site.register(PumpNozle)
-admin.site.register(UserAuth)

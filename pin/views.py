@@ -6,7 +6,7 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from sbh.pin.models import Report, GasStation, Pump, PumpStatus, Delivery, FuelTypeData, FuelType, PumpNozle
+from sbh.pin.models import Report, GasStation, Pump, PumpStatus, Delivery, FuelTypeData, FuelType, PumpNozle, get_used_fuel_types
 from sbh.pin.forms import MechanicalMeterForm, DeliveryForm, MiscForm, ViewReportForm
 from datetime import datetime, timedelta
 
@@ -84,7 +84,7 @@ def mech_report(request, rid=0):
       cd = form.cleaned_data
       ft_dict = dict()
       # Create dict with fuel type totals 
-      for ft_id, name in GasStation.get_used_fuel_types(rep.station):
+      for ft_id, name in get_used_fuel_types(rep.station.id):
         ft_dict[ft_id] = 0.0
       # Iterat all fields
       for name, val in cd.items():
@@ -182,7 +182,7 @@ def misc_report(request, rid=0):
     form = MiscForm(rep = rep, data = request.POST)
     if form.is_valid():
       cd = form.cleaned_data
-      for ft_id,name in GasStation.get_used_fuel_types(rep.station):
+      for ft_id,name in get_used_fuel_types(rep.station.id):
         fto = FuelType.objects.get(id = ft_id)
         try:
           ftdo = FuelTypeData.objects.get(report = rep, fuel_type = fto)
@@ -203,7 +203,7 @@ def misc_report(request, rid=0):
   else:
     form = MiscForm(rep=rep)
 
-  ft_list = GasStation.get_used_fuel_types(rep.station)
+  ft_list = get_used_fuel_types(rep.station.id)
 
   c = RequestContext(request, {'rep': rep, 'form': form, 'ft_list': ft_list})
   return render_to_response('pin/misc_report.html', c)
@@ -244,7 +244,7 @@ def view_report(request, rid=0):
   if rep.is_complete():
     ft_list = Report.get_used_fuel_types(rep)
   else:
-    ft_list = GasStation.get_used_fuel_types(rep.station)
+    ft_list = get_used_fuel_types(rep.station.id)
   page_amr = list()
   page_aer = list()
   page_inl = list()

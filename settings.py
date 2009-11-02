@@ -1,3 +1,4 @@
+# coding: utf-8
 # Django settings for sbh project.
 
 DEBUG = True
@@ -80,6 +81,7 @@ INSTALLED_APPS = (
     'django.contrib.sessions',
     'django.contrib.sites',
     'django.contrib.admin',
+    'sbh.main',
     'sbh.pin',
     'sbh.rsh',
 )

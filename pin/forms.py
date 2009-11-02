@@ -2,7 +2,7 @@
 from django import forms
 from django.forms.forms import BoundField
 from django.utils.safestring import mark_safe
-from sbh.pin.models import GasStation, PumpNozle, Pump, FuelType, Delivery, PumpStatus, FuelTypeData
+from sbh.pin.models import GasStation, PumpNozle, Pump, FuelType, Delivery, PumpStatus, FuelTypeData, get_used_fuel_types
 
 #def get_mechanical_meter_form(gid):
 #    nozles = PumpNozle.objects.filter(pump__station=gid)
@@ -38,7 +38,7 @@ class MechanicalMeterForm(forms.Form):
   def as_spsh(self):
     if self.station is None:
       return mark_safe(u"No pumps")
-    fuel_type_list = self.station.get_used_fuel_types()
+    fuel_type_list = get_used_fuel_types(self.station.id)
     output, hidden_fields = [], []
 
     # Top row / Header
@@ -69,7 +69,7 @@ class DeliveryForm(forms.Form):
   def __init__(self, gs, *args, **kwargs):
     super(DeliveryForm, self).__init__(*args, **kwargs)
 
-    fdict = gs.get_used_fuel_types()
+    fdict = get_used_fuel_types(gs.id)
     clist = list()
     for id,name in fdict:
       clist.append((id , name))
@@ -90,7 +90,7 @@ class MiscForm(forms.Form):
     super(MiscForm, self).__init__(*args, **kwargs)
     self.station = rep.station
 
-    ft_list = GasStation.get_used_fuel_types(rep.station)
+    ft_list = get_used_fuel_types(rep.station.id)
 
     for (ft_id, ft_name) in ft_list:
       try:
@@ -107,7 +107,7 @@ class MiscForm(forms.Form):
   def as_spsh(self):
     if self.station is None:
       return mark_safe(u"No Fuel Types")
-    fuel_type_list = self.station.get_used_fuel_types()
+    fuel_type_list = get_used_fuel_types(self.station.id)
     output, hidden_fields = [], []
 
     # Top row / Header

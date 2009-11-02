@@ -1,7 +1,12 @@
 {% extends "rsh/base.html" %}
 
+{% block extra_head %}
+  <script type="text/javascript" src="/site_media/js/jquery.js"></script>
+  <script type="text/javascript" src="/site_media/js/jquery-ui.js"></script>
+{% endblock %}
+
 {% block breadcrumb %}
-  {{ block.super}} &raquo; <a href="{% url task_management %}">Uppgifts lista</a> &raquo; Ny Uppgift
+  {{ block.super}} &raquo; <a href="{% url task_management gid %}">Aktivitetslista</a> &raquo; Ny Uppgift
 {% endblock %}
 
 {% block content %}
@@ -11,12 +16,26 @@
       Det finns fel i formuläret.
     </p>
   {% endif %}
-
   <hr>
 
   <form action="" method="post">
     <table>
-      {{ form.as_table }}
+      <tr><td>{{ form.name.label_tag }}</td><td colspan=4>{{ form.name }}</td><td colspan=2>{{ form.name.errors}}</td></tr>
+      <tr><td>{{ form.time.label_tag }}</td><td colspan=4>{{ form.time.as_widget }}</td><td colspan=2>{{ form.time.errors}}</td></tr>
+      <tr><td>{{ form.periodstart.label_tag }}</td><td colspan=4>{{ form.periodstart }}</td><td colspan=2>{{ form.periodstart.errors}}</td></tr>
+      <tr><td>{{ form.periodend.label_tag }}</td><td colspan=4>{{ form.periodend }}</td><td colspan=2>{{ form.periodend.errors}}</td></tr>
+      <tr><td>{{ form.type.label_tag }}</td><td colspan=4>{{ form.type }}</td><td colspan=2>{{ form.type.errors}}</td></tr>
+      <tr>
+        <td>{{ form.daymon.label_tag }}{{ form.daymon }}</td>
+        <td>{{ form.daytue.label_tag }}{{ form.daytue }}</td>
+        <td>{{ form.daywed.label_tag }}{{ form.daywed }}</td>
+        <td>{{ form.daythr.label_tag }}{{ form.daythr }}</td>
+        <td>{{ form.dayfri.label_tag }}{{ form.dayfri }}</td>
+        <td>{{ form.daysat.label_tag }}{{ form.daysat }}</td>
+        <td>{{ form.daysun.label_tag }}{{ form.daysun }}</td>
+      </tr>
+      <tr><td>{{ form.dayofmonth.label_tag }}</td><td colspan=4>{{ form.dayofmonth }}</td><td colspan=2>{{ form.dayofmonth.errors}}</td></tr>
+      <tr><td>{{ form.repeat.label_tag }}</td><td colspan=4>{{ form.repeat }}</td><td colspan=2>{{ form.repeat.errors}}</td></tr>
     </table>
     <input type="submit" value="Submit">
   </form>

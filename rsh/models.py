@@ -1,33 +1,34 @@
 # coding: utf-8
 from django.db import models
 from django.contrib.auth.models import User
-from sbh.pin.models import GasStation
+from sbh.main.models import GasStation
 
-class Event(models.Model):
+class Task(models.Model):
   name = models.CharField(max_length=100)
   station = models.ForeignKey(GasStation)
   time = models.TimeField('Time')
-  periodstart = models.DateField('Date')
-  periodend = models.DateField('Date')
-  repeat = models.IntegerField()
-  dayofmonth = models.IntegerField()
-  mon = models.BooleanField()
-  tue = models.BooleanField()
-  wed = models.BooleanField()
-  thr = models.BooleanField()
-  fri = models.BooleanField()
-  sat = models.BooleanField()
-  sun = models.BooleanField()
+  periodstart = models.DateField('Date', null=True, blank=True)
+  periodend = models.DateField('Date', null=True, blank=True)
+  type = models.IntegerField()
+  repeat = models.IntegerField(null=True, blank=True)
+  dayofmonth = models.IntegerField(null=True, blank=True)
+  mon = models.BooleanField(null=True, blank=True)
+  tue = models.BooleanField(null=True, blank=True)
+  wed = models.BooleanField(null=True, blank=True)
+  thr = models.BooleanField(null=True, blank=True)
+  fri = models.BooleanField(null=True, blank=True)
+  sat = models.BooleanField(null=True, blank=True)
+  sun = models.BooleanField(null=True, blank=True)
 
   def __unicode__(self):
     return self.name
 
-class DayEvent(models.Model):
+class DayTask(models.Model):
   name = models.CharField(max_length=100)
   station = models.ForeignKey(GasStation)
   date = models.DateField('Date')
-  signature = models.ForeignKey(User, null=True)
-  timestamp = models.DateTimeField('Signature Time', null=True)
+  signature = models.ForeignKey(User, null=True, blank=True)
+  timestamp = models.DateTimeField('Signature Time', null=True, blank=True)
 
   def __unicode__(self):
     return self.name
