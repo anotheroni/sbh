@@ -66,7 +66,7 @@ class Report(models.Model):
   def has_fuel_type_data(self):
     if self.signature != None:
       return True
-    for ft_id, ft_name in GasStation.get_used_fuel_types(self.station):
+    for ft_id, ft_name in sbh.pin.models.get_used_fuel_types(self.station):
       try:
         ftdo = FuelTypeData.objects.get(report = self, fuel_type = ft_id)
       except FuelTypeData.DoesNotExist:
