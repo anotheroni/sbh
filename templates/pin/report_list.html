@@ -1,7 +1,7 @@
 {% extends "pin/base.html" %}
 
 {% block breadcrumb %}
-  {{ block.super}} &raquo; <a href="{% url report_list gs.id %}" >{{ gs.name }}</a>
+  {{ block.super}} &raquo; <a href="{% url report_list gs.id %}" >PIN - {{ gs.name }}</a>
 {% endblock %}
 
 {% block content %}

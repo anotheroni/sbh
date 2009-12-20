@@ -12,11 +12,11 @@ from datetime import datetime, timedelta
 
 #from django.forms import BoundField
 
-@login_required() #redirect_field_name='login/') #?next=%s' % request.path)
-def station_list(request):
-  station_list = GasStation.objects.all().order_by('name')
-  c = RequestContext(request, {'object_list': station_list})
-  return render_to_response('pin/station_list.html', c)
+#@login_required() #redirect_field_name='login/') #?next=%s' % request.path)
+#def station_list(request):
+#  station_list = GasStation.objects.all().order_by('name')
+#  c = RequestContext(request, {'object_list': station_list})
+#  return render_to_response('pin/station_list.html', c)
 
 @login_required()
 def report_list(request, gid=0):
