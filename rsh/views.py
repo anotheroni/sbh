@@ -4,34 +4,42 @@ from django.shortcuts import render_to_response
 from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from sbh.rsh.forms import NewTaskForm
-from sbh.rsh.models import Task
+from sbh.rsh.models import Task, DayTask
 from sbh.main.models import GasStation
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 @login_required()
 def task_list(request, gid):
   gid = int(gid)
-  try:	# Try to get todays tasks
-    task_list = DayTask.objects.filter(station = gid, date = datetime.today()).order_by('time')
-  except DayTask.DoesNotExist:
-#    tasks = Task.objects.filter(station = gid, periodstart = None OR periodstart < today,
-#		    periodend = None OR periodend > today)
+  today = date.today()
+  # Try to get todays tasks
+  task_list = DayTask.objects.filter(station = gid, date = today).order_by('time')
+  if len(task_list) == 0: # No tasks today, try to create a list
+    tasks = Task.objects.filter(Q(station = gid),
+              Q(periodstart__isnull=True) | Q(periodstart__lte=today),
+		      Q(periodend__isnull=True) | Q(periodend__gte=today))
+    #raise Oskar
     # Weekday
-#    task_list.append(tasks.filter(type = 1))
+    task_list =  []
+    for task in tasks.filter(type = 1):
+      task_list.append(task)
     # Day of week
-#    task_list.append(tasks.filter(type = 2, day[day_of_week]))
+    for task in tasks.filter(type = 2):
+      if task.days[today.weekday()] != '0':
+        task_list.append(task)
     # Day of month
 #    task_list.append(tasks.filter(type = 3, day[day_of_monty]))
 
     # Create DayTasks for today
-#    for task in task_list:
-#      dt = DayTask(station = gid, name = task.name, date = today)
-#      dt.save()
-#    task_list = DayTask.objects.filter(station = gid, date = datetime.today()).order_by('time')
-    pass
-  except Task.DoesNotExist:	# No tasks today
-    task_list = None
+    for task in task_list:
+      dt = DayTask(station=task.station, name=task.name, date=today, time=task.time)
+      dt.save()
+    try:
+      task_list = DayTask.objects.filter(station = gid, date = today).order_by('time')
+    except Task.DoesNotExist:	# No tasks today
+      task_list = None
 
   c = RequestContext(request, {'object_list': task_list, 'gid': gid})
   return render_to_response('rsh/task_list.html', c)
@@ -56,16 +64,16 @@ def newtask(request, gid, tid=0):
         dayofm = int(cd ['dayofmonth'])
         task = Task.objects.get(station=gid, id=tid)
         task.name = cd['name']
-        task.time = cd['time']
+        task.time = u"%s:00" % cd['time']
         task.periodstart = cd['periodstart']
         task.periodend = cd['periodend']
         task.type = type
         task.repeat = repeat
         task.dayofmonth = dayofm
         if type == 2:
-          task.days = cd['daymon'] + (cd['daytue'] << 1) + (cd['daywed'] << 2) +
-                      (cd['daythr'] << 3) + (cd['dayfri'] << 4) +
-                      (cd['daysat'] << 5) + (cd['daysun'] << 6)
+          task.days = "%d%d%d%d%d%d%d" % (cd['daymon'], cd['daytue'],
+                      cd['daywed'], cd['daythr'], cd['dayfri'], cd['daysat'],
+                      cd['daysun'])
         elif type == 3:
           pass      
           
@@ -73,7 +81,7 @@ def newtask(request, gid, tid=0):
         task = Task(station=gs, name = cd['name'], time = u"%s:00" % cd['time'],
                     periodstart = cd['periodstart'], periodend = cd['periodend'],
                     type = int(cd['type']), repeat = int(cd['repeat']),
-                    dayofmonth = int(cd['dayofmonth']), days = )
+                    dayofmonth = int(cd['dayofmonth']), days = None)
       task.save()
       return HttpResponseRedirect(reverse('task_management', args=[gid]))
   else:
@@ -92,7 +100,7 @@ def task_management(request, gid):
 
   c = RequestContext(request, {'object_list': task_list, 'gid': gid})
   
-  return render_to_response('rsh/task_list.html', c)
+  return render_to_response('rsh/task_management.html', c)
 
 @login_required()
 def sign_task(request, gid, tid):

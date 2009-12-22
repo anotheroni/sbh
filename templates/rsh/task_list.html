@@ -3,17 +3,18 @@
 {% block content %}
 
 {% if object_list %}
-  <ul>
+  <table id="formTable">
+  <tr><th>Tid</th><th>Aktivitet</th><th></th></tr>
   {% for object in object_list %}
     {% if object.signature %}
-      <li>{{ object.time }} {{ object.name }} {{ object.signature }}</a></li>
+      <tr><td>{{ object.time }}</td><td>{{ object.name }}</td><td>{{ object.signature }}</td></tr>
     {% else %}
-      <li>{{ object.time }} {{ object.name }} <a href="{% url sign_task gid object.id %}">klar</a></li>
+      <tr><td>{{ object.time }}</td><td>{{ object.name }}</td><td><a href="{% url sign_task gid object.id %}">Signera</a></td></tr>
     {% endif %}
   {% endfor %}
-  </ul>
+  </table>
 {% else %}
-  <p>Det finns inga uppgifter</p>
+  <p>Det finns inga aktiviteter idag</p>
 {% endif %}
 <a href="{% url newtask gid %}">Ny Aktivitet</a>
 <a href="{% url task_management gid %}">Administrera Aktiviteter</a>

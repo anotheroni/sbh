@@ -19,7 +19,8 @@ class Task(models.Model):
 #  fri = models.BooleanField(null=True, blank=True)
 #  sat = models.BooleanField(null=True, blank=True)
 #  sun = models.BooleanField(null=True, blank=True
-  days = models.PositiveIntegerField()
+#  days = models.PositiveIntegerField()
+  days = models.CharField(max_length=32, null=True, blank=True)
 
   def __unicode__(self):
     return self.name
@@ -27,6 +28,7 @@ class Task(models.Model):
 class DayTask(models.Model):
   name = models.CharField(max_length=100)
   station = models.ForeignKey(GasStation)
+  time = models.TimeField('Time')
   date = models.DateField('Date')
   signature = models.ForeignKey(User, null=True, blank=True)
   timestamp = models.DateTimeField('Signature Time', null=True, blank=True)
