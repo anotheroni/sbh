@@ -16,7 +16,9 @@
 {% else %}
   <p>Det finns inga aktiviteter idag</p>
 {% endif %}
-<a href="{% url newtask gid %}">Ny Aktivitet</a>
-<a href="{% url task_management gid %}">Administrera Aktiviteter</a>
+
+{% if adm %}
+  <a href="{% url task_management gid %}">Administrera Aktiviteter</a>
+{% endif %}
 
 {% endblock %}

@@ -43,9 +43,9 @@ class NewTaskForm(forms.Form):
       self.fields['type'] = forms.ChoiceField(label=u"Typ", choices = self.taskTypes,
                                             widget=forms.RadioSelect(),
                                             initial=task.type)
-      self.fields['dayofmonth'] = forms.IntegerField(label=u"Dag i månad",
+      self.fields['dayofmonth'] = forms.IntegerField(label=u"Dag i månad", required=False,
                                 min_value=1, max_value=31, initial=task.dayofmonth)
-      self.fields['repeat'] = forms.IntegerField(label=u"Upprepa var",
+      self.fields['repeat'] = forms.IntegerField(label=u"Upprepa var", required=False,
                             min_value=0, initial=task.repeat)
     else:
       self.fields['name'] = forms.CharField(label=u"Aktivitet")
@@ -56,9 +56,9 @@ class NewTaskForm(forms.Form):
                                                  widget=SelectDateWidget())
       self.fields['type'] = forms.ChoiceField(label=u"Typ", choices = self.taskTypes,
                                                  widget=forms.RadioSelect())
-      self.fields['dayofmonth'] = forms.IntegerField(label=u"Dag i ...",
+      self.fields['dayofmonth'] = forms.IntegerField(label=u"Dag i månad", required=False,
                                 min_value=1, max_value=31)
-      self.fields['repeat'] = forms.IntegerField(label=u"Återupprepning",
+      self.fields['repeat'] = forms.IntegerField(label=u"Återupprepning", required=False,
                             min_value=0)
 
     if task and task.type == 2:

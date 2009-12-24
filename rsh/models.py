@@ -12,14 +12,6 @@ class Task(models.Model):
   type = models.IntegerField()
   repeat = models.IntegerField(null=True, blank=True)
   dayofmonth = models.IntegerField(null=True, blank=True)
-#  mon = models.BooleanField(null=True, blank=True)
-#  tue = models.BooleanField(null=True, blank=True)
-#  wed = models.BooleanField(null=True, blank=True)
-#  thr = models.BooleanField(null=True, blank=True)
-#  fri = models.BooleanField(null=True, blank=True)
-#  sat = models.BooleanField(null=True, blank=True)
-#  sun = models.BooleanField(null=True, blank=True
-#  days = models.PositiveIntegerField()
   days = models.CharField(max_length=32, null=True, blank=True)
 
   def __unicode__(self):
