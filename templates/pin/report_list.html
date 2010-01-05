@@ -1,29 +1,32 @@
 {% extends "pin/base.html" %}
 
 {% block breadcrumb %}
-  {{ block.super}} &raquo; <a href="{% url report_list gs.id %}" >PIN - {{ gs.name }}</a>
+  {{ block.super}}
+  <li class="menu"><a class="menu" href="{% url report_list gs.id %}">&raquo; PIN - {{ gs.name }}</a></li>
 {% endblock %}
 
 {% block content %}
 
 {% if object_list %}
-  <ul>
+  <ul class="list">
   {% for report in object_list %}
-    <li>{{ report.date }}
     {% if forloop.last and unsignedreport %}
-      <a href="{% url overview_report report.id %}">edit</a>
+      <li class="list"><a class="fg-button ui-state-default ui-corner-all" href="{% url overview_report report.id %}">{{ report.date }} edit</a></li>
     {% else %}
-      <a href="{% url view_report report.id %}">view</a>
+      <li class="list"><a class="fg-button ui-state-default ui-corner-all" href="{% url view_report report.id %}">{{ report.date }} view</a></li>
     {% endif %}
-    </li>
   {% endfor %}
   </ul>
 {% else %}
-  <p>Det finns inga rapporter</p>
+  <div class="ui-widget center300">
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+    <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>Det finns inga rapporter</p>
+    </div>
+  </div>
 {% endif %}
 
 {% if not unsignedreport %}
-  <a href="{% url new_report gs.id %}">Skapa ny rapport</a>
+  <a class="button" href="{% url new_report gs.id %}">Skapa ny rapport</a>
 {% endif %}
 
 {% endblock %}

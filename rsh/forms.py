@@ -1,6 +1,5 @@
 # coding: utf-8
 from django import forms
-from django.forms.forms import BoundField
 from django.utils.safestring import mark_safe
 from sbh.rsh.models import Task, DayTask
 from django.forms.extras.widgets import SelectDateWidget
@@ -35,13 +34,11 @@ class NewTaskForm(forms.Form):
       self.fields['time'] = forms.ChoiceField(label=u"Tid", choices = self.taskHour,
                                             initial=task.time.hour)
       self.fields['periodstart'] = forms.DateField(label=u"Period Början", required=False,
-                                            initial=task.periodstart,
-                                            widget=SelectDateWidget())
+                                            initial=task.periodstart)
       self.fields['periodend'] = forms.DateField(label=u"Period Slut", required=False,
-                                            initial=task.periodend,
-                                            widget=SelectDateWidget())
+                                            initial=task.periodend)
       self.fields['type'] = forms.ChoiceField(label=u"Typ", choices = self.taskTypes,
-                                            widget=forms.RadioSelect(),
+                                            #widget=forms.RadioSelect(),
                                             initial=task.type)
       self.fields['dayofmonth'] = forms.IntegerField(label=u"Dag i månad", required=False,
                                 min_value=1, max_value=31, initial=task.dayofmonth)
@@ -50,12 +47,11 @@ class NewTaskForm(forms.Form):
     else:
       self.fields['name'] = forms.CharField(label=u"Aktivitet")
       self.fields['time'] = forms.ChoiceField(label=u"Tid", choices = self.taskHour)
-      self.fields['periodstart'] = forms.DateField(label=u"Period Början", required=False,
-                                                 widget=SelectDateWidget())
-      self.fields['periodend'] = forms.DateField(label=u"Period Slut", required=False,
-                                                 widget=SelectDateWidget())
+      self.fields['periodstart'] = forms.DateField(label=u"Period Början", required=False)
+      self.fields['periodend'] = forms.DateField(label=u"Period Slut", required=False)
       self.fields['type'] = forms.ChoiceField(label=u"Typ", choices = self.taskTypes,
-                                                 widget=forms.RadioSelect())
+                                                 #widget=forms.RadioSelect(),
+                                                 initial=0)
       self.fields['dayofmonth'] = forms.IntegerField(label=u"Dag i månad", required=False,
                                 min_value=1, max_value=31)
       self.fields['repeat'] = forms.IntegerField(label=u"Återupprepning", required=False,

@@ -9,6 +9,7 @@ from django.contrib.auth.models import User
 from sbh.pin.models import Report, GasStation, Pump, PumpStatus, Delivery, FuelTypeData, FuelType, PumpNozle, get_used_fuel_types
 from sbh.pin.forms import MechanicalMeterForm, DeliveryForm, MiscForm, ViewReportForm
 from datetime import datetime, timedelta
+from copy import copy
 
 #from django.forms import BoundField
 
@@ -245,34 +246,36 @@ def view_report(request, rid=0):
     ft_list = Report.get_used_fuel_types(rep)
   else:
     ft_list = get_used_fuel_types(rep.station.id)
-  page_amr = list()
-  page_aer = list()
-  page_inl = list()
-  page_lai = list()
-  page_ldb = list()
+  page = list()
 
-  row00 = [u"", "#"]
-  row10 = [u"S:a mätarställning idag", "="]
-  row11 = [u"Mätarställning föregående", "-"]
-  row14 = [u"Sålda liter", "="]
-  row15 = [u"Avläsning registerställning idag", "+"]
-  row16 = [u"Registerställning föregående", "-"]
-  row17 = [u"Sålda liter enligt elektr räkneverk", "="]
-  row19 = [u"Differens idag", "="]
-  row20 = [u"Differens föregående", "+"]
-  row21 = [u"Ack differens", "="]
-  row27 = [u"Summa inleveranser", "="]
-  row28 = [u"Pejlat lager idag", ""]
-  row29 = [u"Pejlat lager foregaende", "+"]
-  row32 = [u"Rundpumpning", "+"]
-  row33 = [u"Teoretisk lager idag", "="]
-  row34 = [u"Lagerdifferens idag", "="]
-  row35 = [u"Ack lagerdifferens föregående", "="]
-  row36 = [u"Ack lagerdifferens", "="]
-  row37 = [u"Ack försäljning föregående", "+"]
-  row39 = [u"Ack försäljning", "="]
-  row40 = [u"Ack lagerdifferens i %", "="]
-  row41 = [u"Pumppris idag", ""]
+  rowh0 = [0, u"Avstämning mekaniska räkneverk"]
+  rowh1 = [0, u"Avstämning elektroniska räkneverk"]
+  rowh2 = [0, u"Inleveranser"]
+  rowh3 = [0, u"Lageravstämmning idag"] 
+  rowh4 = [0, u"Lagerdifferens från bokföringsårets början"]
+
+  row00 = [1, u"", u""]
+  row10 = [9, u"S:a mätarställning idag", "="]
+  row11 = [9, u"Mätarställning föregående", "-"]
+  row14 = [9, u"Sålda liter", "="]
+  row15 = [9, u"Avläsning registerställning idag", "+"]
+  row16 = [9, u"Registerställning föregående", "-"]
+  row17 = [9, u"Sålda liter enligt elektr räkneverk", "="]
+  row19 = [9, u"Differens idag", "="]
+  row20 = [9, u"Differens föregående", "+"]
+  row21 = [9, u"Ack differens", "="]
+  row27 = [9, u"Summa inleveranser", "="]
+  row28 = [9, u"Pejlat lager idag", ""]
+  row29 = [9, u"Pejlat lager föregående", "+"]
+  row32 = [9, u"Rundpumpning", "+"]
+  row33 = [9, u"Teoretisk lager idag", "="]
+  row34 = [9, u"Lagerdifferens idag", "="]
+  row35 = [9, u"Ack lagerdifferens föregående", "="]
+  row36 = [9, u"Ack lagerdifferens", "="]
+  row37 = [9, u"Ack försäljning föregående", "+"]
+  row39 = [9, u"Ack försäljning", "="]
+  row40 = [9, u"Ack lagerdifferens", "%"]
+  row41 = [9, u"Pumppris idag", ""]
 
   pumpnumlist = list()
   pumprowlist = list()
@@ -285,13 +288,13 @@ def view_report(request, rid=0):
     pumpsolddict[(pump_num, pump.pump_nozle.fuel_type.id)] = pump.meter_reading
   pumpnumlist.sort()
   for pump_num in pumpnumlist:
-    pumprowlist.append([u"Pump %d" % pump_num, "+"])
+    pumprowlist.append([9, u"Pump %d" % pump_num, "+"])
 
   # Find new pumps to create row 12
   newpumplist = list()
   newpumpdict = dict()
   for pump in Pump.objects.filter(station = rep.station, add_date = rep.date):
-    newpumplist.append([u"Ing. mätarställning ny pump %d" % pump.number, "-"])
+    newpumplist.append([9, u"Ing. mätarställning ny pump %d" % pump.number, "-"])
     for pumpnozle in PumpNozle.objects.filter(pump = pump):
       newpumpdict[(len(newpumplist), pumpnozle.fuel_type.id)] = pumpnozle.initial_meter_value
 
@@ -299,7 +302,7 @@ def view_report(request, rid=0):
   removedpumplist = list()
   removedpumpdict = dict()
   for pump in Pump.objects.filter(station = rep.station, removal_date = rep.date):
-    removedpumplist.append([u"Utg. mätars. borttagen pump %s" % pump.number, "+"])
+    removedpumplist.append([9, u"Utg. mätars. borttagen pump %s" % pump.number, "+"])
     for pumpnozle in PumpNozle.objects.filter(pump = pump):
       removedpumpdict[(len(removedpumplist), pumpnozle.fuel_type.id)] = pumpnozle.initial_meter_value
 
@@ -307,7 +310,7 @@ def view_report(request, rid=0):
   deliveryrowlist = list()
   totaldeliverydict = dict()
   for delivery in Delivery.objects.filter(report = rep):
-    row = [u"delivery", "+"]
+    row = [9, u"Leverans", "+"]
     for ft_id, ft_name in ft_list:
       if delivery.fuel_type.id == ft_id:
         try:
@@ -396,7 +399,7 @@ def view_report(request, rid=0):
       row39.append(ftdo_prev.accumulated_sold + row14tot)
       ftdo.accumulated_sold = ftdo_prev.accumulated_sold + row14tot
       try:
-        row40.append(row36tot * 100 / (ftdo_prev.accumulated_sold + row14tot))
+        row40.append("%.3f" %(row36tot * 100 / (ftdo_prev.accumulated_sold + row14tot)))
       except ZeroDivisionError:
         row40.append("Inf")
     else:
@@ -407,7 +410,7 @@ def view_report(request, rid=0):
       row39.append(row14tot)
       ftdo.accumulated_sold = row14tot
       try:
-        row40.append((ftdo.pin_meter_reading - row33tot) * 100 / row14tot)
+        row40.append("%.3f" % ((ftdo.pin_meter_reading - row33tot) * 100 / row14tot))
       except ZeroDivisionError:
         row40.append("Inf")
     row41.append(ftdo.pumpp_data)
@@ -415,48 +418,54 @@ def view_report(request, rid=0):
       ftdo.save()
 
   # Add all rows to the page
-  page_amr.append(row00)
-  page_amr += pumprowlist
-  page_amr.append(row10)
-  page_amr.append(row11)
-  page_amr += newpumplist
-  page_amr += removedpumplist
-  page_amr.append(row14)
+  page.append(row00)
+  page.append(rowh0)
+  page += pumprowlist
+  page.append(row10)
+  page.append(row11)
+  page += newpumplist
+  page += removedpumplist
+  page.append(row14)
 
-  page_aer.append(row15)
-  page_aer.append(row16)
-  page_aer.append(row17)
-  row14[1] = "-"
-  page_aer.append(row14)	# row18
-  page_aer.append(row19)
-  page_aer.append(row20)
-  page_aer.append(row21)
+  page.append(rowh1)
+  page.append(row15)
+  page.append(row16)
+  page.append(row17)
+  row18 = copy(row14)
+  row18[2] = "-"
+  page.append(row18)
+  page.append(row19)
+  page.append(row20)
+  page.append(row21)
 
-  page_inl += deliveryrowlist
-  page_inl.append(row27)
+  page.append(rowh2)
+  page += deliveryrowlist
+  page.append(row27)
 
-  page_lai.append(row28)
-  page_lai.append(row29)
-  row27[1] = "+"
-  page_lai.append(row27)	# row30
-  row14[1] = "-"
-  page_lai.append(row14)	# row31
-  page_lai.append(row32)
-  page_lai.append(row33)
-  page_lai.append(row34)
+  page.append(rowh3)
+  page.append(row28)
+  page.append(row29)
+  row30 = copy(row27)
+  row30[2] = "+"
+  page.append(row30)
+  page.append(row18)	# row31 (row18 is row14 with a -)
+  page.append(row32)
+  page.append(row33)
+  page.append(row34)
 
-  page_ldb.append(row35)
-  page_ldb.append(row36)
-  page_ldb.append(row37)
-  row14[1] = "+"
-  page_ldb.append(row14)	# row38
-  page_ldb.append(row39)
-  page_ldb.append(row40)
-  page_ldb.append(row41)
+  page.append(rowh4)
+  page.append(row35)
+  page.append(row36)
+  page.append(row37)
+  row38 = copy(row14)
+  row38[2] = "+"
+  page.append(row38)
+  page.append(row39)
+  page.append(row40)
+  page.append(row41)
 
-  c = RequestContext(request, {'rep':rep, 'form':form, 'page_amr':page_amr,
-                               'page_aer':page_aer, 'page_inl':page_inl,
-                               'page_lai':page_lai, 'page_ldb':page_ldb, 
+  c = RequestContext(request, {'rep':rep, 'form':form, 'page':page,
+                               'columns':len(ft_list) + 2,
                                'signame':signame, 'sigtime':sigtime})
   return render_to_response('pin/view_report.html', c)
 

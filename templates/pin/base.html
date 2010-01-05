@@ -2,7 +2,9 @@
 
 {% block header %}<h1>PIN</h1>{% endblock %}
 
-{% block breadcrumb %}{{ block.super}}{% endblock %}
+{% block breadcrumb %}{{ block.super}}
+{% comment %}<!--  <li class="menu"><a class="menu" href="{% url report_list gs.id %}">&raquo; PIN - {{ gs.name }}</a></li>{% endcomment %}
+{% endblock %}
 
 {% block footer %}
   <hr>

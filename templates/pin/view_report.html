@@ -1,87 +1,49 @@
 {% extends "pin/base.html" %}
 
 {% block breadcrumb %}
-  {{ block.super}} &raquo; <a href="{% url report_list rep.station.id %}" >{{ rep.station.name }}</a>
+  {{ block.super}}
+  <li class="menu"><a class="menu" href="{% url report_list rep.station.id %}">&raquo; PIN - {{ rep.station.name }}</a></li>
   {% if form.password %}
-    &raquo; <a href="{% url overview_report rep.id %}">{{ rep.date }}</a> &raquo; Signera
+    <li class="menu"><a class="menu" href="{% url overview_report rep.id %}">&raquo; {{ rep.date }}</a></li><li class="menu"><a class="menu" href="#">&raquo; Signera</a></li>
   {% else %}
-    &raquo; {{ rep.date }}
+    <li class="menu"><a class="menu" href="#">&raquo; {{ rep.date }}</a></li>
   {% endif %}
 {% endblock %}
 
 {% block content %}
 
   {% if form.errors %}
-    <p style="color: red;">
-      Det finns fel i formuläret.
-    </p>
+    <div class="fg-message ui-state-error fg-message-icon-left ui-corner-all">
+      <span class="ui-icon ui-icon-alert"></span>Det finns fel i formuläret
+    </div> 
   {% endif %}
 
-  Avstämning mekaniska räkneverk
-  <table id="formTable" width="300">
-  {% for row in page_amr %}
-    <tr>
+  <table class="formtable ui-widget">
+  {% for row in page %}
+    {% ifnotequal row.0 9 %}<tr class="ui-widget-header">
+    {% else %}<tr>
+    {% endifnotequal %}
     {% for col in row %}
-      {% if forloop.parentloop.first or forloop.first %}<th>{% else %}<td>{% endif %}
-      {{ col }}
-      {% if forloop.parentloop.first or forloop.first %}</th>{% else %}</td>{% endif %}
+      {% if not forloop.first %}
+        {% ifequal row.0 0 %}
+          <td class="formtablehead" colspan="{{ columns }}">{{ col }}</td>
+        {% endifequal %}
+        {% ifequal row.0 1 %}
+          <td>{{ col }}</td>
+        {% endifequal %}
+        {% ifequal row.0 9 %}
+          {% ifequal forloop.counter 2 %}
+            <td class="ui-widget-content formtablehead">{{ col }}</td>
+          {% else %}
+            <td class="ui-widget-content formtabledata">{{ col }}</td>
+          {% endifequal %}
+        {% endifequal %}
+      {% endif %}
     {% endfor %}
     </tr>
   {% endfor %}
   </table>
-
-  Avstämning elektroniska räkneverk
-  <table id="formTable" width="300">
-  {% for row in page_aer %}
-    <tr>
-    {% for col in row %}
-      {% if forloop.parentloop.first or forloop.first %}<th>{% else %}<td>{% endif %}
-      {{ col }}
-      {% if forloop.parentloop.first or forloop.first %}</th>{% else %}</td>{% endif %}
-    {% endfor %}
-    </tr>
-  {% endfor %}
-  </table>
-
-  Inleveranser
-  <table id="formTable" width="300">
-  {% for row in page_inl %}
-    <tr>
-    {% for col in row %}
-      {% if forloop.parentloop.first or forloop.first %}<th>{% else %}<td>{% endif %}
-      {{ col }}
-      {% if forloop.parentloop.first or forloop.first %}</th>{% else %}</td>{% endif %}
-    {% endfor %}
-    </tr>
-  {% endfor %}
-  </table>
-
-  Lageravstämmning idag
-  <table id="formTable" width="300">
-  {% for row in page_lai %}
-    <tr>
-    {% for col in row %}
-      {% if forloop.parentloop.first or forloop.first %}<th>{% else %}<td>{% endif %}
-      {{ col }}
-      {% if forloop.parentloop.first or forloop.first %}</th>{% else %}</td>{% endif %}
-    {% endfor %}
-    </tr>
-  {% endfor %}
-  </table>
- 
-  Lagerdifferens från bokföringsårets början
-  <table id="formTable" width="300">
-  {% for row in page_ldb %}
-    <tr>
-    {% for col in row %}
-      {% if forloop.parentloop.first or forloop.first %}<th>{% else %}<td>{% endif %}
-      {{ col }}
-      {% if forloop.parentloop.first or forloop.first %}</th>{% else %}</td>{% endif %}
-    {% endfor %}
-    </tr>
-  {% endfor %}
-  </table>
-
+  
   {% if form.password %}
     <form action="" method="post">
       {% if form.errors %}
@@ -90,7 +52,12 @@
       <p>Lösenord {{ form.password }}<input type="submit" value="Signera" /></p>
     </form>
   {% else %}
-    Signerad av {{ signame}} {{ sigtime|date:"Ymj-His"}}
+    <div class="ui-widget center300">
+      <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+      <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+      Signerad av: {{ signame}} - <i>{{ sigtime|date:"Y-m-j H:i"}}</i></p>
+      </div>
+    </div>
   {% endif %}
 
 {% endblock %}

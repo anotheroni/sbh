@@ -1,22 +1,29 @@
 {% extends "pin/base.html" %}
 
 {% block breadcrumb %}
-  {{ block.super}} &raquo; <a href="{% url report_list rep.station.id %}" >{{ rep.station.name }}</a> &raquo; {{ rep.date }}
+  {{ block.super}}
+  <li class="menu"><a class="menu" href="{% url report_list rep.station.id %}">&raquo; {{ rep.station.name }}</a></li>
+  <li class="menu"><a class="menu" href="#">&raquo; {{ rep.date }}</a></li>
 {% endblock %}
 
 {% block content %}
 
 {% if rep %}
-  <ul>
-    <li><a href="{% url mech_report rep.id %}">Mekaniskaräkneverk</a>{% if rep.has_mech_data %}<img src="/site_media/images/ok.png"  width="20" height="20" alt="OK">{% else %}<img src="/site_media/images/notok.png"  width="20" height="20" alt="Ej Ok">{% endif %}</li>
-    <li><a href="{% url delivery_report rep.id %}">Leveranser</a>{% if rep.has_delivery_data %}<img src="/site_media/images/ok.png"  width="20" height="20" alt="OK">{% else %}<img src="/site_media/images/none.png"  width="20" height="20" alt="Ingen">{% endif %}</li>
-    <li><a href="{% url misc_report rep.id %}">Övrigt</a>{% if rep.has_fuel_type_data %}<img src="/site_media/images/ok.png"  width="20" height="20" alt="OK">{% else %}<img src="/site_media/images/notok.png"  width="20" height="20" alt="Ej Ok">{% endif %}</li>
+  <div class="center300"><ul class="list">
+    <li class="list"><a class="fg-button ui-state-default fg-button-icon-right ui-corner-all" href="{% url mech_report rep.id %}">{% if rep.has_mech_data %}<span class="ui-icon ui-icon-check"></span>{% else %}<span class="ui-icon ui-icon-circle-close"></span>{% endif %}Mekaniskaräkneverk</a></li>
+    <li class="list"><a class="fg-button ui-state-default fg-button-icon-right ui-corner-all" href="{% url delivery_report rep.id %}">{% if rep.has_delivery_data %}<span class="ui-icon ui-icon-check"></span>{% else %}<span class="ui-icon ui-icon-help"></span>{% endif %}Leveranser</a></li>
+    <li class="list"><a class="fg-button ui-state-default fg-button-icon-right ui-corner-all" href="{% url misc_report rep.id %}">{% if rep.has_fuel_type_data %}<span class="ui-icon ui-icon-check"></span>{% else %}<span class="ui-icon ui-icon-circle-close"></span>{% endif %}Övrigt</a></li>
   {% if rep.is_complete %}
-    <li><a href="{% url view_report rep.id %}">Signera</a></li>
+    <li class="list"><a class="fg-button ui-state-default ui-corner-all" href="{% url view_report rep.id %}">Signera</a></li>
   {% endif %}
-  </ul>
+  </ul></div>
 {% else %}
-  <p>Det finns inga rapporter.</p>
+  <div class="ui-widget center300">
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+    <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>
+    Det finns inga rapporter</p>
+    </div>
+  </div>
 {% endif %}
 
 {% endblock %}

@@ -3,17 +3,21 @@
 {% block content %}
 
 {% if object_list %}
-  <ul>
+  <div >
   {% for object in object_list %}
     {% ifequal object.app 1 %} 
-      <li><a href="{% url report_list object.station.id %}">{{ object.station }} - PIN</a></li>
+      <a class="fg-button ui-state-default ui-corner-all" href="{% url report_list object.station.id %}">{{ object.station }} - PIN</a>
     {% else %}{% ifequal object.app 2 %}
-      <li><a href="{% url task_list object.station.id %}">{{ object.station }} - RSH</a></li>
+      <a class="fg-button ui-state-default ui-corner-all" href="{% url task_list object.station.id %}">{{ object.station }} - RSH</a>
     {% endifequal %}{% endifequal %}
   {% endfor %}
-  </ul>
+  </div>
 {% else %}
-  <p>Du har inte rättigheter till någon bensinstation</p>
+  <div class="ui-widget center300">
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+    <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>Du har inte rättigheter till någon bensinstation</p>
+      </div>
+    </div>
 {% endif %}
 
 {% endblock %}

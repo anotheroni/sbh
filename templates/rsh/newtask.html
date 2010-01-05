@@ -1,22 +1,37 @@
 {% extends "rsh/base.html" %}
 
 {% block extra_head %}
-  <script type="text/javascript" src="/site_media/js/jquery.js"></script>
-  <script type="text/javascript" src="/site_media/js/jquery-ui.js"></script>
+<script type="text/javascript">
+  $(document).ready(function() {
+    $("#id_periodstart").datepicker({showOn: 'both', buttonImage:'/site_media/images/calendar.gif', buttonImageOnly: true, dateFormat: 'yy-mm-dd'});
+    $("#id_periodend").datepicker({showOn: 'both', buttonImage: '/site_media/images/calendar.gif', buttonImageOnly: true, dateFormat: 'yy-mm-dd'});
+    $("#tabs").tabs({
+      select: function(event, ui) { 
+        var selected = ui.index;  // Index of selected tab
+        $("#id_type").val(selected + 1);
+        if (selected==0) { $("#repeat_lbl").text("dag"); }
+        else if (selected==1) { $("#repeat_lbl").text("vecka"); }
+        else { $("#repeat_lbl").text("månad"); }
+      }
+    });
+    $("#tabs").tabs('select', {{ initialtype  }});
+    //$("#typeselector").remove();
+  });
+</script>
 {% endblock %}
 
 {% block breadcrumb %}
-  {{ block.super}} &raquo; Ny Uppgift
+  {{ block.super}}
+  <li class="menu"><a class="menu" href="#">&raquo; Ny aktivitet</a></li>
 {% endblock %}
 
 {% block content %}
 
   {% if form.errors %}
-    <p style="color: red;">
-      Det finns fel i formuläret.
-    </p>
+    <div class="fg-message ui-state-error fg-message-icon-left ui-corner-all">
+      <span class="ui-icon ui-icon-alert"></span>Det finns fel i formuläret
+    </div> 
   {% endif %}
-  <hr>
 
   <form action="" method="post">
     <table>
@@ -24,20 +39,33 @@
       <tr><td>{{ form.time.label_tag }}</td><td colspan=4>{{ form.time.as_widget }}</td><td colspan=2>{{ form.time.errors}}</td></tr>
       <tr><td>{{ form.periodstart.label_tag }}</td><td colspan=4>{{ form.periodstart }}</td><td colspan=2>{{ form.periodstart.errors}}</td></tr>
       <tr><td>{{ form.periodend.label_tag }}</td><td colspan=4>{{ form.periodend }}</td><td colspan=2>{{ form.periodend.errors}}</td></tr>
-      <tr><td>{{ form.type.label_tag }}</td><td colspan=4>{{ form.type }}</td><td colspan=2>{{ form.type.errors}}</td></tr>
-      <tr>
-        <td>{{ form.daymon.label_tag }}{{ form.daymon }}</td>
-        <td>{{ form.daytue.label_tag }}{{ form.daytue }}</td>
-        <td>{{ form.daywed.label_tag }}{{ form.daywed }}</td>
-        <td>{{ form.daythr.label_tag }}{{ form.daythr }}</td>
-        <td>{{ form.dayfri.label_tag }}{{ form.dayfri }}</td>
-        <td>{{ form.daysat.label_tag }}{{ form.daysat }}</td>
-        <td>{{ form.daysun.label_tag }}{{ form.daysun }}</td>
-      </tr>
-      <tr><td>{{ form.dayofmonth.label_tag }}</td><td colspan=4>{{ form.dayofmonth }}</td><td colspan=2>{{ form.dayofmonth.errors}}</td></tr>
-      <tr><td>{{ form.repeat.label_tag }}</td><td colspan=4>{{ form.repeat }}</td><td colspan=2>{{ form.repeat.errors}}</td></tr>
+      <tr id="typeselector"><td>{{ form.type.label_tag }}</td><td colspan=4>{{ form.type }}</td><td colspan=2>{{ form.type.errors}}</td></tr>
     </table>
-    <input type="submit" value="Submit">
+    <div class="ui-tabs ui-widget ui-widget-content ui-corner-all" id="tabs">
+      <ul class="ui-tabs-nav ui-helper-reset ui-helper-clearfix ui-widget-header ui-corner-all">
+      <li class="ui-state-default ui-corner-top ui-tabs-selected ui-state-active"><a href="#tabs-1">Dag</a></li>
+      <li class="ui-state-default ui-corner-top"><a href="#tabs-2">Vecka</a></li>
+      <li class="ui-state-default ui-corner-top"><a href="#tabs-3">Månad</a></li>
+      </ul>
+      <div class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="tabs-1">
+        <p>Det finns inga speciella parametrar för dagliga aktiviteter</p>     
+      </div>
+      <div class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="tabs-2">
+        <ul class="menu">
+        <li class="menu">{{ form.daymon.label_tag }}{{ form.daymon }}</li>
+        <li class="menu">{{ form.daytue.label_tag }}{{ form.daytue }}</li>
+        <li class="menu">{{ form.daywed.label_tag }}{{ form.daywed }}</li>
+        <li class="menu">{{ form.daythr.label_tag }}{{ form.daythr }}</li>
+        <li class="menu">{{ form.dayfri.label_tag }}{{ form.dayfri }}</li>
+        <li class="menu">{{ form.daysat.label_tag }}{{ form.daysat }}</li>
+        <li class="menu">{{ form.daysun.label_tag }}{{ form.daysun }}</li>
+        </ul>
+      </div>
+      <div class="ui-tabs-panel ui-widget-content ui-corner-bottom" id="tabs-3">
+        {{ form.dayofmonth.label_tag }} {{ form.dayofmonth }} {{ form.dayofmonth.errors}}
+      </div>
+    </div>
+    {{ form.repeat.label_tag }} {{ form.repeat }}:e <label id="repeat_lbl">dag</label> {{ form.repeat.errors}}<br />
+    <input type="submit" value="Spara">
   </form>
-
 {% endblock %}

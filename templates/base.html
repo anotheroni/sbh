@@ -1,25 +1,54 @@
 <!DOCTYPE HTML PUBLIC " - //W3C//DTD HTML 4.01//EN">
 <html lang="sv.UTF-8">
-<link rel="stylesheet" href="/site_media/css/style.css" type="text/css"> 
 <head>
+<link type="text/css" href="/site_media/css/theme/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
+<link type="text/css" rel="stylesheet" href="/site_media/css/style.css"> 
+<script type="text/javascript" src="/site_media/js/jquery.js"></script>
+<script type="text/javascript" src="/site_media/js/jquery-ui.js"></script>
+<script type="text/javascript">
+  $(function(){
+    //all hover and click logic for buttons
+    $(".fg-button:not(.ui-state-disabled)")
+    .hover(
+      function(){ 
+        $(this).addClass("ui-state-hover"); 
+      },
+      function(){ 
+        $(this).removeClass("ui-state-hover"); 
+      }
+    )
+    .mousedown(function(){
+				$(this).parents('.fg-buttonset-single:first').find(".fg-button.ui-state-active").removeClass("ui-state-active");
+				if( $(this).is('.ui-state-active.fg-button-toggleable, .fg-buttonset-multi .ui-state-active') ){ $(this).removeClass("ui-state-active"); }
+				else { $(this).addClass("ui-state-active"); }
+		})
+    .mouseup(function(){
+			if(! $(this).is('.fg-button-toggleable, .fg-buttonset-single .fg-button,  .fg-buttonset-multi .fg-button') ){
+				$(this).removeClass("ui-state-active");
+			}
+    });
+  });
+</script>
     <title>{% block title %}{% endblock %}</title>
     {% block extra_head %}{% endblock %}
 </head>
-<body>
-  <center><div id="mainContainer">
-    {% block header %}
-      <h1>Applikationer</h1>
-    {% endblock %}
-    <div id="menu">
+<body><div class="page">
+  {% block header %}
+    <h1>Applikationer</h1>
+  {% endblock %}
+  <div class="mainmenu">
+    <ul class="menu">
+    {% block breadcrumb %}<li class="menu"><a class="menu" href="{% url program_list %}">SBH</a></li>{% endblock %}
     {% block menu %}
       {% if user.is_authenticated %}
-        {{ user.username }}  <a href="{% url django.contrib.auth.views.logout %}">logout</a>
+        <li class="menuright"><a class="menu" href="{% url django.contrib.auth.views.logout %}">logout</a></li>
       {% endif %}
     {% endblock %}
-    </div>
-    <div id="main_menu_div">{% block breadcrumb %}<a href="{% url program_list %}">SBH</a>{% endblock %}</div>
+    </ul>
+  </div>
+  <div class="content">
     {% block content %}{% endblock %}
-    {% block footer %}{% endblock %}
-  </div></center>
-</body>
+  </div>
+  {% block footer %}{% endblock %}
+</div></body>
 </html>

@@ -2,7 +2,7 @@
 
 {% block header %}<h1>PIN</h1>{% endblock %}
 
-{% block breadcrumb %}{{ block.super}} &raquo; <a href="{% url task_list gid %}">RSH</a>{% endblock %}
+{% block breadcrumb %}{{ block.super}}<li class="menu"><a class="menu" href="{% url task_list gid %}">&raquo; RSH</a></li>{% endblock %}
 
 {% block footer %}
   <hr>

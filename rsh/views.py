@@ -95,7 +95,7 @@ def newtask(request, gid, tid=0):
       cd = form.cleaned_data
       try:
         type = int(cd['type'])
-        repeat = int(cd ['repeat'])
+        repeat = int(cd['repeat'])
         days = None
         dayofm = None
         if type == 2:
@@ -126,7 +126,8 @@ def newtask(request, gid, tid=0):
   else:
     form = NewTaskForm(gid, tid)
 
-  c = RequestContext(request, {'form': form, 'gid': gid})
+  initialtype = form.fields['type'].initial - 1 # Ugly but found no better way
+  c = RequestContext(request, {'form': form, 'gid': gid, 'initialtype':initialtype})
   return render_to_response('rsh/newtask.html', c)
 
 @login_required()
