@@ -15,13 +15,14 @@
       }
     });
     $("#tabs").tabs('select', {{ initialtype  }});
-    //$("#typeselector").remove();
+    $("#typeselector").hide();
   });
 </script>
 {% endblock %}
 
 {% block breadcrumb %}
   {{ block.super}}
+  <li class="menu"><a class="menu" href="{% url task_management gid %}">&raquo; Administrera Aktiviteter</a></li>
   <li class="menu"><a class="menu" href="#">&raquo; Ny aktivitet</a></li>
 {% endblock %}
 

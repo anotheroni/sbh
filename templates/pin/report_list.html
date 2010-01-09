@@ -26,7 +26,9 @@
 {% endif %}
 
 {% if not unsignedreport %}
-  <a class="button" href="{% url new_report gs.id %}">Skapa ny rapport</a>
+  <div class="padded">
+  <a class="fg-button ui-state-default ui-corner-all" href="{% url new_report gs.id %}">Skapa ny rapport</a>
+  </div>
 {% endif %}
 
 {% endblock %}
