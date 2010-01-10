@@ -6,12 +6,13 @@ from django.template import RequestContext
 from django.core.urlresolvers import reverse
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-from sbh.pin.models import Report, GasStation, Pump, PumpStatus, Delivery, FuelTypeData, FuelType, PumpNozle, get_used_fuel_types
+from sbh.main.models import GasStation, UserAuth
+from sbh.pin.models import Report, Pump, PumpStatus, Delivery, FuelTypeData, FuelType, PumpNozle, get_used_fuel_types
 from sbh.pin.forms import MechanicalMeterForm, DeliveryForm, MiscForm, ViewReportForm
 from datetime import datetime, timedelta
 from copy import copy
 
-#from django.forms import BoundField
+from django.views.generic.date_based import archive_index, archive_year, archive_month
 
 #@login_required() #redirect_field_name='login/') #?next=%s' % request.path)
 #def station_list(request):
@@ -20,20 +21,31 @@ from copy import copy
 #  return render_to_response('pin/station_list.html', c)
 
 @login_required()
-def report_list(request, gid=0):
+def report_list(request, gid=0, year=0):
   gid = int(gid)
-  try:	# Make sure that the Gas Station exists, if not redirect 
-    gs = GasStation.objects.get(id = gid)
-  except GasStation.DoesNotExist:
-    return HttpResponseRedirect(reverse('station_list'))
+  try: # Check user level for app
+    uauth = UserAuth.objects.get(user = request.user, station = gid, app = 1)
+  except UserAuth.DoesNotExist:
+    return HttpResponseRedirect(reverse('program_list'))
+  if uauth.level < 1:
+    return HttpResponseRedirect(reverse('program_list'))
 
-  try:
+  try:  # Check if there is an unsigned report. Needed for view.
     Report.objects.get(station=gid, signature=None)
     unsignedreport = True
   except Report.DoesNotExist:
     unsignedreport = False
+
+  if month is not None:
+      # month view
+    #return archive_month(request, queryset=)
+  elif year is not None:
+      # year view
+  else
+      # archive view
+
   report_list = Report.objects.filter(station=gid).order_by('date')
-  c = RequestContext(request, {'object_list': report_list, 'gs': gs,
+  c = RequestContext(request, {'object_list': report_list, 'gs': uauth.station,
                                'unsignedreport': unsignedreport})
   return render_to_response('pin/report_list.html', c)
 
