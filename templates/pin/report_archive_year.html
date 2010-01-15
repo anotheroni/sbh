@@ -1,0 +1,15 @@
+{% extends "pin/base.html" %}
+
+{% block breadcrumb %}
+  {{ block.super}}
+  <li class="menu"><a class="menu" href="{% url report_list gs.id %}">&raquo; PIN - {{ gs.name }}</a></li>
+  <li class="menu"><a class="menu" href="{% url report_list gs.id year %}">&raquo; {{ year }}</a></li>
+{% endblock %}
+
+{% block content %}
+
+{% for month in date_list %}
+  <a href="{% url report_list gs.id year month|date:"M" %}">{{ month|date:"F" }}</a>
+{% endfor %}
+
+{% endblock %}

@@ -21,7 +21,7 @@ from django.views.generic.date_based import archive_index, archive_year, archive
 #  return render_to_response('pin/station_list.html', c)
 
 @login_required()
-def report_list(request, gid=0, year=0):
+def report_list(request, gid=0, year=0, month=0):
   gid = int(gid)
   try: # Check user level for app
     uauth = UserAuth.objects.get(user = request.user, station = gid, app = 1)
@@ -30,24 +30,28 @@ def report_list(request, gid=0, year=0):
   if uauth.level < 1:
     return HttpResponseRedirect(reverse('program_list'))
 
-  try:  # Check if there is an unsigned report. Needed for view.
-    Report.objects.get(station=gid, signature=None)
-    unsignedreport = True
-  except Report.DoesNotExist:
-    unsignedreport = False
+  if month != 0:
+    return archive_month(request, year=year, month=month,
+             queryset=Report.objects.filter(station=gid),
+             date_field='date', allow_empty=True,
+             extra_context={'gs':uauth.station, 'year':year, 'month':month})
+  elif year != 0:
+    return archive_year(request, year=year,
+             queryset=Report.objects.filter(station=gid),
+             date_field='date', allow_empty=True,
+             extra_context={'gs':uauth.station})
+  else:
+    try:  # Check if there is an unsigned report. Needed for view.
+      Report.objects.get(station=gid, signature=None)
+      unsigned = True
+    except Report.DoesNotExist:
+      unsigned = False
+    return archive_index(request,
+             queryset=Report.objects.filter(station=gid),
+             date_field='date', allow_empty=True,
+             template_object_name='object_list',
+             extra_context={'gs':uauth.station, 'unsignedreport': unsigned})
 
-  if month is not None:
-      # month view
-    #return archive_month(request, queryset=)
-  elif year is not None:
-      # year view
-  else
-      # archive view
-
-  report_list = Report.objects.filter(station=gid).order_by('date')
-  c = RequestContext(request, {'object_list': report_list, 'gs': uauth.station,
-                               'unsignedreport': unsignedreport})
-  return render_to_response('pin/report_list.html', c)
 
 @login_required()
 def new_report(request, gid = 0):

@@ -7,6 +7,22 @@
 
 {% block content %}
 
+{% if date_list %}
+  {% for year_obj in date_list %}
+    {% ifequal year_obj|date:"Y" year %}
+      <a href="{% url report_list gs.id year_obj|date:"Y" %}"><b>{{ year_obj|date:"Y" }}</b></a>
+    {% else %}
+      <a href="{% url report_list gs.id year_obj|date:"Y" %}">{{ year_obj|date:"Y" }}</a>
+    {% endifequal %}
+  {% endfor %}
+{% endif %}
+<br/>
+{% if year %}
+  {% for month in date_list %}
+    <a href="{% url report_list gs.id year month|date:"M" %}">{{ month|date:"F" }}</a>
+  {% endfor %}
+{% endif %}
+
 {% if object_list %}
   <ul class="list">
   {% for report in object_list %}
@@ -17,13 +33,13 @@
     {% endif %}
   {% endfor %}
   </ul>
-{% else %}
+{% else %}{% if not year %}
   <div class="ui-widget center300">
     <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
     <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>Det finns inga rapporter</p>
     </div>
   </div>
-{% endif %}
+{% endif %}{% endif %}
 
 {% if not unsignedreport %}
   <div class="padded">

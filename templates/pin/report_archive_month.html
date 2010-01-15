@@ -1,0 +1,30 @@
+{% extends "pin/base.html" %}
+
+{% block breadcrumb %}
+  {{ block.super}}
+  <li class="menu"><a class="menu" href="{% url report_list gs.id %}">&raquo; PIN - {{ gs.name }}</a></li>
+  <li class="menu"><a class="menu" href="{% url report_list gs.id year %}">&raquo; {{ year }}</a></li>
+  <li class="menu"><a class="menu" href="{% url report_list gs.id year month %}">&raquo; {{ month }}</a></li>
+{% endblock %}
+
+{% block content %}
+
+{% if object_list %}
+  <ul class="list">
+  {% for report in object_list %}
+    {% if forloop.last and unsignedreport %}
+      <li class="list"><a class="fg-button ui-state-default ui-corner-all" href="{% url overview_report report.id %}">{{ report.date }} edit</a></li>
+    {% else %}
+      <li class="list"><a class="fg-button ui-state-default ui-corner-all" href="{% url view_report report.id %}">{{ report.date }} view</a></li>
+    {% endif %}
+  {% endfor %}
+  </ul>
+{% else %}
+  <div class="ui-widget center300">
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+    <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>Det finns inga rapporter</p>
+    </div>
+  </div>
+{% endif %}
+
+{% endblock %}
