@@ -14,7 +14,7 @@
     <li class="list"><a class="fg-button ui-state-default fg-button-icon-right ui-corner-all" href="{% url delivery_report rep.id %}">{% if rep.has_delivery_data %}<span class="ui-icon ui-icon-check"></span>{% else %}<span class="ui-icon ui-icon-help"></span>{% endif %}Leveranser</a></li>
     <li class="list"><a class="fg-button ui-state-default fg-button-icon-right ui-corner-all" href="{% url misc_report rep.id %}">{% if rep.has_fuel_type_data %}<span class="ui-icon ui-icon-check"></span>{% else %}<span class="ui-icon ui-icon-circle-close"></span>{% endif %}Övrigt</a></li>
   {% if rep.is_complete %}
-    <li class="list"><a class="fg-button ui-state-default ui-corner-all" href="{% url view_report rep.id %}">Signera</a></li>
+    <li class="list"><a class="fg-button ui-state-default ui-corner-all" href="{% url view_report rep.id 0 %}">Signera</a></li>
   {% endif %}
   </ul></div>
 {% else %}

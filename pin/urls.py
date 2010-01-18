@@ -11,5 +11,6 @@ urlpatterns = patterns('',
   url(r'^report/(?P<rid>\d+)/deliv/$', 'pin.views.deliv_report', name="delivery_report"),
   url(r'^report/(?P<rid>\d+)/del_deliv/d(?P<did>\d+)/$', 'pin.views.delete_delivery', name="delivery_delete"),
   url(r'^report/(?P<rid>\d+)/misc/$', 'pin.views.misc_report', name="misc_report"),
+  url(r'^report/(?P<rid>\d+)/view/(?P<redir>\d+)/$', 'pin.views.view_report', name="view_report"),  # Needed to handle case when signing a report
   url(r'^report/(?P<rid>\d+)/view/$', 'pin.views.view_report', name="view_report"),
 )

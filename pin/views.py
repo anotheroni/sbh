@@ -59,7 +59,7 @@ def new_report(request, gid = 0):
   try:  # Make sure that the Gas Station exists, if not redirect 
     gs = GasStation.objects.get(id = gid)
   except GasStation.DoesNotExist:
-    return HttpResponseRedirect(reverse('station_list'))
+    return HttpResponseRedirect(reverse('program_list'))
   
   try:  # Check if there is an unsigned report to continue
     r = Report.objects.get(station = gid, signature__isnull = True)
@@ -81,7 +81,7 @@ def overview_report(request, rid=0):
   try:	# Make sure report exist, of not redirect
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
-    return HttpResponseRedirect(reverse('station_list'))
+    return HttpResponseRedirect(reverse('program_list'))
 
   c = RequestContext(request, {'rep': rep})
   return render_to_response('pin/overview_report.html', c)
@@ -93,7 +93,7 @@ def mech_report(request, rid=0):
   try:	# Make sure report exist, of not redirect
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
-    return HttpResponseRedirect(reverse('station_list'))
+    return HttpResponseRedirect(reverse('program_list'))
     
   if request.method == 'POST':
     form = MechanicalMeterForm(rep=rep, data=request.POST)
@@ -145,7 +145,7 @@ def deliv_report(request, rid=0):
   try:	# Make sure report exist, of not redirect
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
-    return HttpResponseRedirect(reverse('station_list'))
+    return HttpResponseRedirect(reverse('program_list'))
 
   if request.method == 'POST':
     form = DeliveryForm(gs=rep.station, data=request.POST)
@@ -176,7 +176,7 @@ def delete_delivery(request, rid=0, did=0):
   try:	# Make sure report exist, of not redirect
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
-    return HttpResponseRedirect(reverse('station_list'))
+    return HttpResponseRedirect(reverse('program_list'))
 
   try:
     delivery = Delivery.objects.get(id = did)
@@ -193,7 +193,7 @@ def misc_report(request, rid=0):
   try:	# Make sure report exist, of not redirect
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
-    return HttpResponseRedirect(reverse('station_list'))
+    return HttpResponseRedirect(reverse('program_list'))
 
   if request.method == 'POST':
     form = MiscForm(rep = rep, data = request.POST)
@@ -226,12 +226,12 @@ def misc_report(request, rid=0):
   return render_to_response('pin/misc_report.html', c)
 
 @login_required()
-def view_report(request, rid=0):
+def view_report(request, rid=0, redir=1):
   rid = int(rid)
   try:	# Make sure report exist, of not redirect
     rep = Report.objects.get(id = rid)
   except Report.DoesNotExist:
-    return HttpResponseRedirect(reverse('station_list'))
+    return HttpResponseRedirect(reverse('program_list'))
 
   signame = None
   sigtime = None
@@ -239,6 +239,8 @@ def view_report(request, rid=0):
     form = None
     signame = rep.signature.username
     sigtime = rep.timestamp
+  elif redir != '0':  # Report isn't finished, redirect to overview unless flag is set.
+    return HttpResponseRedirect(reverse('overview_report', args=[rid]))  # Quite ugly!
   elif request.method == 'POST':
     form = ViewReportForm(rep=rep, data=request.POST)
     if form.is_valid():
@@ -264,6 +266,7 @@ def view_report(request, rid=0):
     ft_list = get_used_fuel_types(rep.station.id)
   page = list()
 
+  # The first number is used for html formating. 0 header, 1 top row, 9 data
   rowh0 = [0, u"Avstämning mekaniska räkneverk"]
   rowh1 = [0, u"Avstämning elektroniska räkneverk"]
   rowh2 = [0, u"Inleveranser"]
@@ -301,7 +304,7 @@ def view_report(request, rid=0):
     pump_num = pump.pump_nozle.pump.number
     if pump_num not in pumpnumlist:
       pumpnumlist.append(pump_num)
-    pumpsolddict[(pump_num, pump.pump_nozle.fuel_type.id)] = pump.meter_reading
+    pumpsolddict[("Pump %d" % pump_num, pump.pump_nozle.fuel_type.id)] = pump.meter_reading
   pumpnumlist.sort()
   for pump_num in pumpnumlist:
     pumprowlist.append([9, u"Pump %d" % pump_num, "+"])
@@ -349,7 +352,7 @@ def view_report(request, rid=0):
 
     for pumprow in pumprowlist:
       try:
-        val = pumpsolddict[(pumprow[0], ft_id)]
+        val = pumpsolddict[(pumprow[1], ft_id)]
         pumprow.append(val)
       except:
         pumprow.append("")
