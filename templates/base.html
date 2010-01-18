@@ -6,7 +6,9 @@
 <script type="text/javascript" src="/site_media/js/jquery.js"></script>
 <script type="text/javascript" src="/site_media/js/jquery-ui.js"></script>
 <script type="text/javascript">
-  $(function(){
+  $(document).ready(function(){
+    $(".activerow").hover(function(){ $(this).addClass("ui-state-hover"); },
+      function(){ $(this).removeClass("ui-state-hover"); })
     //all hover and click logic for buttons
     $(".fg-button:not(.ui-state-disabled)")
     .hover(
@@ -36,7 +38,7 @@
   {% block header %}
     <h1>Applikationer</h1>
   {% endblock %}
-  <div class="mainmenu">
+  <div id="mainmenu">
     <ul class="menu">
     {% block breadcrumb %}<li class="menu"><a class="menu" href="{% url program_list %}">SBH</a></li>{% endblock %}
     {% block menu %}
@@ -46,7 +48,10 @@
     {% endblock %}
     </ul>
   </div>
-  <div class="content">
+  <div id="leftmenu">
+    {% block leftmenu %}{% endblock %}
+  </div>
+  <div id="content">
     {% block content %}{% endblock %}
   </div>
   {% block footer %}{% endblock %}
