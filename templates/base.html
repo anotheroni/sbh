@@ -1,0 +1,59 @@
+<!DOCTYPE HTML PUBLIC " - //W3C//DTD HTML 4.01//EN">
+<html lang="sv.UTF-8">
+<head>
+<link type="text/css" href="/site_media/css/theme/jquery-ui-1.7.2.custom.css" rel="stylesheet" />
+<link type="text/css" rel="stylesheet" href="/site_media/css/style.css"> 
+<script type="text/javascript" src="/site_media/js/jquery.js"></script>
+<script type="text/javascript" src="/site_media/js/jquery-ui.js"></script>
+<script type="text/javascript">
+  $(document).ready(function(){
+    $(".activerow").hover(function(){ $(this).addClass("ui-state-hover"); },
+      function(){ $(this).removeClass("ui-state-hover"); })
+    //all hover and click logic for buttons
+    $(".fg-button:not(.ui-state-disabled)")
+    .hover(
+      function(){ 
+        $(this).addClass("ui-state-hover"); 
+      },
+      function(){ 
+        $(this).removeClass("ui-state-hover"); 
+      }
+    )
+    .mousedown(function(){
+				$(this).parents('.fg-buttonset-single:first').find(".fg-button.ui-state-active").removeClass("ui-state-active");
+				if( $(this).is('.ui-state-active.fg-button-toggleable, .fg-buttonset-multi .ui-state-active') ){ $(this).removeClass("ui-state-active"); }
+				else { $(this).addClass("ui-state-active"); }
+		})
+    .mouseup(function(){
+			if(! $(this).is('.fg-button-toggleable, .fg-buttonset-single .fg-button,  .fg-buttonset-multi .fg-button') ){
+				$(this).removeClass("ui-state-active");
+			}
+    });
+  });
+</script>
+    <title>{% block title %}{% endblock %}</title>
+    {% block extra_head %}{% endblock %}
+</head>
+<body><div class="page">
+  {% block header %}
+    <h1>Applikationer</h1>
+  {% endblock %}
+  <div id="mainmenu">
+    <ul class="menu">
+    {% block breadcrumb %}<li class="menu"><a class="menu" href="{% url program_list %}">SBH</a></li>{% endblock %}
+    {% block menu %}
+      {% if user.is_authenticated %}
+        <li class="menuright"><a class="menu" href="{% url django.contrib.auth.views.logout %}">logout</a></li>
+      {% endif %}
+    {% endblock %}
+    </ul>
+  </div>
+  <div id="leftmenu">
+    {% block leftmenu %}{% endblock %}
+  </div>
+  <div id="content">
+    {% block content %}{% endblock %}
+  </div>
+  {% block footer %}{% endblock %}
+</div></body>
+</html>

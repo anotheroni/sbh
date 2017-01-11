@@ -1,0 +1,45 @@
+{% extends "pin/base.html" %}
+
+{% block breadcrumb %}
+  {{ block.super}}
+  <li class="menu"><a class="menu" href="{% url report_list rep.station.id %}">&raquo; {{ rep.station.name }}</a></li>
+  <li class="menu"><a class="menu" href="{% url overview_report rep.id %}">&raquo; {{ rep.date }}</a></li>
+  <li class="menu"><a class="menu" href="#">&raquo; Leveranser</a></li>
+{% endblock %}
+
+{% block content %}
+
+  <div class="center300">
+  {% if form.errors %}
+    <div class="fg-message ui-state-error fg-message-icon-left ui-corner-all">
+      <span class="ui-icon ui-icon-alert"></span>Det finns fel i formuläret
+    </div>
+  {% endif %}
+
+  {% if object_list %}
+    <table class="ui-widget formtable" width="200">
+      <tr><td class="ui-widget-header" colspan="3">Leveranser</td></tr>
+    {% for delivery in object_list %}
+      <tr><td class="ui-widget-content">{{ delivery }}</td>
+        <td class="ui-widget-content">{{ delivery.volume }}</td>
+        <td class="formtabledata"><a class="fg-button-small ui-state-error fg-button-icon-solo ui-corner-all" href="{% url delivery_delete rep.id delivery.id %}"><span class="ui-icon ui-icon-circle-close"><span></a></td></tr>
+    {% endfor %}
+    </table>
+  {% else %}
+    <div class="ui-widget center300">
+      <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+      <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>Det finns inga leveranser</p>
+      </div>
+    </div>
+  {% endif %}
+
+  <form action="" method="post">
+    <table class="ui-widget formtable">
+      <tr><td class="ui-widget-header" colspan="2">Registrera ny leverans</td></tr>
+      {{ form.as_table }}
+      <tr><td></td><td class="formtabledata"><input type="submit" value="Submit"></td></tr>
+    </table>
+  </form>
+  </div>
+
+{% endblock %}

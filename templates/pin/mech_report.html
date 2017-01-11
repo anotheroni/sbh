@@ -1,0 +1,25 @@
+{% extends "pin/base.html" %}
+
+{% block breadcrumb %}
+  {{ block.super}}
+  <li class="menu"><a class="menu" href="{% url report_list rep.station.id %}">&raquo; {{ rep.station.name }}</a></li>
+  <li class="menu"><a class="menu" href="{% url overview_report rep.id %}">&raquo; {{ rep.date }}</a></li>
+  <li class="menu"><a class="menu" href="#">&raquo; Mekaniska räkneverk</a></li>
+{% endblock %}
+
+{% block content %}
+
+  {% if form.errors %}
+    <div class="fg-message ui-state-error fg-message-icon-left ui-corner-all">
+      <span class="ui-icon ui-icon-alert"></span>Det finns fel i formuläret
+    </div> 
+  {% endif %}
+
+  <form action="" method="post">
+    <table class="formtable">
+      {{ form.as_spsh }}
+    </table>
+    <input type="submit" value="Submit">
+  </form>
+
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends "pin/base.html" %}
+
+{% block breadcrumb %}
+  {{ block.super}}
+  <li class="menu"><a class="menu" href="{% url report_list gs.id %}">&raquo; PIN - {{ gs.name }}</a></li>
+{% endblock %}
+
+{% block leftmenu %}
+  <table id="leftmenu" class="ui-widget">
+    <th class="ui-widget-header">Navigation</th>
+    <tr class="activerow"><td class="formtablehead activerow ui-widget-content ui-state-highlight"><a class="activelink" href="{% url report_list gs.id %}">Senaste</a></td></tr>
+    {% for year_obj in date_list %}
+      <tr class="activerow"><td class="formtablehead activerow ui-widget-content"><a class="activelink" href="{% url report_list gs.id year_obj|date:"Y" %}">{{ year_obj|date:"Y" }}</a></td></tr>
+    {% endfor %}
+  </table>
+{% endblock %}
+
+{% block content %}
+
+{% if object_list %}
+  <table class="formtable ui-widget">
+    <th class="ui-widget-header">Rapporter</th>
+    {% for report in object_list %}
+      <tr class="activerow"><td class="activerow ui-widget-content"><a class="activelink" href="{% url view_report report.id %}">{{ report.date }}</a></td></tr>
+    {% endfor %}
+  </table>
+{% else %}
+  <div class="ui-widget center300">
+    <div class="ui-state-highlight ui-corner-all" style="margin-top: 20px; padding: 0 .7em;"> 
+    <p><span class="ui-icon ui-icon-info" style="float: left; margin-right: .3em;"></span>Det finns inga rapporter</p>
+    </div>
+  </div>
+{% endif %}
+
+{% if not unsignedreport %}
+  <div class="padded">
+  <a class="fg-button ui-state-default ui-corner-all" href="{% url new_report gs.id %}">Skapa ny rapport</a>
+  </div>
+{% endif %}
+
+{% endblock %}

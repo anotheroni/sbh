@@ -1,0 +1,22 @@
+{% extends "pin/base.html" %}
+
+{% block breadcrumb %}
+  {{ block.super}}
+  <li class="menu"><a class="menu" href="{% url report_list gs.id %}">&raquo; PIN - {{ gs.name }}</a></li>
+  <li class="menu"><a class="menu" href="{% url report_list gs.id year %}">&raquo; {{ year }}</a></li>
+{% endblock %}
+
+{% block leftmenu %}
+  <table id="leftmenu" class=ui-widget">
+    <th class="ui-widget-header">Navigation</th>
+    <tr class="activerow"><td class="formtablehead activerow ui-widget-content"><a class="activelink" href="{% url report_list gs.id %}">Senaste</a></td></tr>
+    <tr class="activerow"><td class="formtablehead activerow ui-widget-content ui-state-highlight"><a class="activelink" href="{% url report_list gs.id year %}">{{ year }}</a></td></tr>
+    {% for month in date_list %}
+      <tr class="activerow"><td class="formtablehead activerow ui-widget-content"><a class="activelink" href="{% url report_list gs.id year month|date:"M" %}">&nbsp;{{ month|date:"F" }}</a>
+    {% endfor %}
+  </table>
+{% endblock %}
+
+{% block content %}
+&nbsp;
+{% endblock %}
